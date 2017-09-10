@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="colorPrimary">#607d8b</color>
+    <color name="colorPrimaryDark">#455a64</color>
+    <color name="colorAccent">#ff4081</color>
+
+    <color name="primary_text">#212121</color>
+    <color name="secondary_text">#757575</color>
+    <color name="white">#FFFFFF</color>
+    <color name="divider">#BDBDBD</color>
+
+
+    <color name="materialRed200">#ef9a9a</color>
+    <color name="materialRed500">#f44336</color>
+    <color name="greenAccent700">#00c853</color>
+    <color name="lightBlue300">#4fc3f7</color>
+
+
+</resources>

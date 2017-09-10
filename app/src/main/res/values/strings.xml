@@ -1,0 +1,58 @@
+<resources>
+
+    <string name="app_name">Shhh</string>
+
+    <!-- ACTIVITY NAMES -->
+    <string name="activity_settings">Settings</string>
+    <string name="activity_about">About Shhh</string>
+
+
+    <!-- PREFERENCES SCREEN -->
+    <string name="pref_location_label">LOCATION</string>
+    <string name="pref_settings_label">Settings</string>
+
+    <string name="pref_activate_geofences_key" translatable="false">geofencesKey</string>
+    <string name="pref_geofence_enabled">Enabled</string>
+    <string name="pref_geofence_disabled">Disabled</string>
+    <string name="pref_geofence_title">Geofences</string>
+
+    <!-- MENU LABELS -->
+    <string name="action_settings">Settings</string>
+    <string name="action_about">About</string>
+
+    <!-- INFO -->
+    <string name="deleteString">Delete</string>
+    <string name="deletedString">Deleted!</string>
+    <string name="undoString">Undo?</string>
+
+
+    <!-- ADAPTER -->
+    <string name="adapter_delete_ok">Wifi deleted OK</string>
+    <string name="adapter_delete_failed">Wifi delete failed</string>
+
+
+    <!-- CONTENT DESCRIPTION -->
+    <string name="cd_location">Image of a location icon</string>
+    <string name="cd_powered_by">Image of the powered by google icon</string>
+
+
+
+    <!-- Strings ERRORS -->
+    <string name="no_internet_connection">There is no Internet connection!</string>
+    <string name="permission_location">I need the location permission</string>
+    <string name="google_play_error">Google Play Services must be installed</string>
+    <string name="no_places_in_list">No places yet!</string>
+
+
+
+    <!-- GEOFENCES -->
+    <string name="geofences_enabled">Geofences have been enabled</string>
+    <string name="geofences_disabled">Geofences have been disabled</string>
+
+    <string name="geofence_silent_mode">Silent mode activated</string>
+    <string name="geofences_touch_to_launch">Touch to launch the app</string>
+    <string name="geofences_back_to_normal">Back to normal</string>
+
+    <string name="privacy_policy">http://www.google.com/policies/privacy</string>
+
+</resources>

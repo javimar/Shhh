@@ -1,0 +1,89 @@
+package eu.javimar.shhh.sync;
+
+import android.content.Context;
+import android.support.annotation.NonNull;
+
+import com.firebase.jobdispatcher.Constraint;
+import com.firebase.jobdispatcher.Driver;
+import com.firebase.jobdispatcher.FirebaseJobDispatcher;
+import com.firebase.jobdispatcher.GooglePlayDriver;
+import com.firebase.jobdispatcher.Job;
+import com.firebase.jobdispatcher.Lifetime;
+import com.firebase.jobdispatcher.Trigger;
+
+import java.util.concurrent.TimeUnit;
+
+@SuppressWarnings("all")
+public class RegisterGeofencesJob
+{
+    private static final String LOG_TAG = RegisterGeofencesJob.class.getSimpleName();
+
+    // Interval at which to re-register geofences
+    private static final int INTERVAL_MINUTES = 60; // every 24 hours 1440
+    private static final int INTERVAL_SECONDS =
+            (int)(TimeUnit.MINUTES.toSeconds(INTERVAL_MINUTES));
+    private static final int SYNC_FLEXTIME_SECONDS = INTERVAL_SECONDS;
+
+    private static final String GEOFENCES_JOB_TAG = "geofence_registration_tag";
+
+    private static boolean sInitialized = false;
+
+    public synchronized static void scheduleRegisteringGeofences(@NonNull final Context context)
+    {
+        if (sInitialized) return;
+
+        Driver driver = new GooglePlayDriver(context);
+        FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(driver);
+
+        // Create the Job to periodically re-register geofences
+        Job constraintReminderJob = dispatcher.newJobBuilder()
+
+                .setService(GeofenceRegistrationFirebaseJobService.class)
+
+                // Set the UNIQUE tag used to identify this Job.
+                .setTag(GEOFENCES_JOB_TAG)
+
+                /*
+                 * Network constraints on which this Job should run. In this app, we're using the
+                 * device charging constraint so that the job executes in all networks
+                 *
+                 * In a normal app, it might be a good idea to include a preference for this,
+                 * as different users may have different preferences on when you should be
+                 * syncing your application's data.
+                 */
+                .setConstraints(Constraint.ON_ANY_NETWORK)
+
+                /*
+                 * setLifetime sets how long this job should persist. The options are to keep the
+                 * Job "forever" or to have it die the next time the device boots up.
+                 */
+                .setLifetime(Lifetime.FOREVER)
+
+                // We want this to continuously happen, so we tell this Job to recur.
+                .setRecurring(true)
+
+                /*
+                 * We want this to happen every INTERVAL_MINUTES minutes or so. The first argument for
+                 * Trigger class's static executionWindow method is the start of the time frame
+                 * when the job should be performed. The second argument is the latest point in time at
+                 * which the data should be synch'ed. Please note that this end time is not
+                 * guaranteed, but is more of a guideline for FirebaseJobDispatcher to go off.
+                 */
+                .setTrigger(Trigger.executionWindow(INTERVAL_SECONDS, SYNC_FLEXTIME_SECONDS))
+
+                /*
+                 * If a Job with the tag provided already exists, this new job will replace
+                 * the old one.
+                 */
+                .setReplaceCurrent(true)
+
+                // Once the Job is ready, call the builder's build method to return the Job
+                .build();
+
+        // Schedule the Job with the dispatcher
+        dispatcher.schedule(constraintReminderJob);
+
+        // Mark job initialized
+        sInitialized = true;
+    }
+}
