@@ -24,7 +24,7 @@ import eu.javimar.shhh.sync.GeofenceTransitionsIntentService;
 /**
  * To build GEOFENCES, several objects are needed:
  *
- * 1. GEOFENCES object list --> from the PlaceBuffer sent to addGeofences() method
+ * 1. GEOFENCES object list --> from the PlaceBuffer sent to addUpdateGeofences() method
  * 2. GEOFENCE Request --> getGeofencingRequest() method
  * 3. GoogleApiClient --> from the constructor
  * 4. PendingIntent --> getGeofencePendingIntent() method
@@ -36,8 +36,8 @@ public class Geofencing implements ResultCallback
     // Constants
     public static final String LOG_TAG = Geofencing.class.getSimpleName();
     private static final float GEOFENCE_RADIUS = 50; // 50 meters
-    //private static final long GEOFENCE_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours in millis
-    private static final long GEOFENCE_TIMEOUT = 5 * 60 * 1000; // 5'
+    private static final long GEOFENCE_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours in millis
+    //private static final long GEOFENCE_TIMEOUT = 5 * 60 * 1000; // 5'
 
     private List<Geofence> mGeofenceList;
     private PendingIntent mGeofencePendingIntent;
@@ -66,14 +66,10 @@ public class Geofencing implements ResultCallback
         if (mGoogleApiClient == null || !mGoogleApiClient.isConnected() ||
                 mGeofenceList == null || mGeofenceList.size() == 0)
         {
-Log.e(LOG_TAG, "JAVIER-->  registerAllGeofences ME PIRO");
-
             return;
         }
         try
         {
-Log.e(LOG_TAG, "JAVIER-->  registerAllGeofences connected= " + mGoogleApiClient.isConnected());
-
             // Add the ApiClient, the request and the pending intent
             LocationServices.GeofencingApi.addGeofences(
                     mGoogleApiClient,
@@ -93,14 +89,10 @@ Log.e(LOG_TAG, "JAVIER-->  registerAllGeofences connected= " + mGoogleApiClient.
     {
         if (mGoogleApiClient == null || !mGoogleApiClient.isConnected())
         {
-Log.e(LOG_TAG, "JAVIER-->  unRegisterAllGeofences ME PIRO connected= " + mGoogleApiClient.isConnected());
-
             return;
         }
         try
         {
-Log.e(LOG_TAG, "JAVIER-->  unRegisterAllGeofences connected= " + mGoogleApiClient.isConnected());
-
             LocationServices.GeofencingApi.removeGeofences(
                     mGoogleApiClient,
                     // same pending intent that was used in registerGeofences
@@ -120,7 +112,7 @@ Log.e(LOG_TAG, "JAVIER-->  unRegisterAllGeofences connected= " + mGoogleApiClien
      * Given a PlaceBuffer instance, go through all places in it, creating a GEOFENCE instance
      * which gets added to a list mGeofenceList
      */
-    public void addGeofences(PlaceBuffer places)
+    public void addUpdateGeofences(PlaceBuffer places)
     {
         mGeofenceList = new ArrayList<>();
         if (places == null || places.getCount() == 0) return;
@@ -152,19 +144,25 @@ Log.e(LOG_TAG, "JAVIER-->  unRegisterAllGeofences connected= " + mGoogleApiClien
      *
      * @return the GeofencingRequest object
      */
-    private GeofencingRequest getGeofencingRequest() {
-
+    private GeofencingRequest getGeofencingRequest()
+    {
         GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
 
         // when building a GeofencingRequest you need to specify an initial trigger that specifies
         // what happens when the device is already inside. INITIAL_TRIGGER_ENTER sets it immediately
         builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
+
+
+Log.e(LOG_TAG, "JAVIER lista size= " + mGeofenceList.size());
+
+
+
         builder.addGeofences(mGeofenceList);
         return builder.build();
     }
 
     /**
-     *  Specify which intent to laucnh when the geofence entry or exit event, triggers.
+     *  Specify which intent to launch when the geofence entry or exit event, triggers.
      *  In this case we use a BroadcastReceiver so everytime trigger is launch, the BR onReceive()
      *  is run
      */
@@ -187,6 +185,14 @@ Log.e(LOG_TAG, "JAVIER-->  unRegisterAllGeofences connected= " + mGoogleApiClien
     @Override
     public void onResult(@NonNull Result result)
     {
+
+
+Log.e(LOG_TAG, "JAVIER STATUS= " + result.getStatus().toString());
+
+
+
+
+
         if(!result.getStatus().isSuccess())
         {
             Log.e(LOG_TAG, String.format("Error adding/removing geofence : %s",

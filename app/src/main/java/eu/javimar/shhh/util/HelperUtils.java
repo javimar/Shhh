@@ -113,20 +113,4 @@ public final class HelperUtils
         }
     }
 
-
-    public static boolean isDatabaseEmpty(Context context)
-    {
-        Cursor cursor = context.getContentResolver()
-                .query(PlaceEntry.CONTENT_URI, null, null, null, null);
-        if (cursor == null || cursor.getCount() < 1)
-        {
-            return true;
-        }
-        else
-        {
-            cursor.close();
-            return false;
-        }
-    }
-
 }

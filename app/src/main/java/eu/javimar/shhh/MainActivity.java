@@ -69,13 +69,11 @@ public class MainActivity extends AppCompatActivity implements
     private static final int REQUEST_LOCATION_PERMISSION_FINE = 0;
     private static final int REQUEST_LOCATION_PERMISSION_COARSE = 1;
     private static final int PLACE_PICKER_REQUEST = 3;
-
-    // Identifier for the place database loader
-    static final int PLACES_DB_LOADER = 5;
+    private static final int PLACES_DB_LOADER = 5;
 
     public static boolean sHaveLocationPermission = false;
     private static boolean sGeoPrefChange = false;
-    private static boolean sOpeningPreferences = false;
+    private static boolean sPreferencesOpened = false;
 
     // Views
     @BindView(R.id.fab) FloatingActionButton mFabAddPlace;
@@ -84,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements
     @BindView(R.id.tv_empty_view)TextView mEmptyView;
 
     // Save the recycler position on screen orientation and when coming back
-    static int sLastFirstVisiblePosition;
+    private static int sLastFirstVisiblePosition;
 
     private PlaceAdapter placeAdapter;
 
@@ -93,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements
     // Instance of the Geofencing class
     Geofencing mGeofencing;
     // Allows to keep track of the Preferences for enabling or disabling geofences
-    private boolean geofencesEnabled;
+    private boolean areGeofencesEnabled;
 
 
     @Override
@@ -105,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements
         ButterKnife.bind(this);
 
         setSupportActionBar(mToolbar);
+        mToolbar.setTitle(R.string.app_name);
 
         // set recycler view
         mRecyclerViewPlace.setLayoutManager(new LinearLayoutManager(this));
@@ -120,21 +119,20 @@ public class MainActivity extends AppCompatActivity implements
         askForLocationPermission();
 
         // Build up the LocationServices API client
-        // Uses the addApi method to request the LocationServices API
         // Also uses enableAutoManage to automatically when to connect/suspend the client
         mGoogleApiClient= new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .addApi(Places.GEO_DATA_API)
-                .enableAutoManage(this, this)
+                //.enableAutoManage(this, this)
                 .build();
 
         // instantiate the Geofences class, passing the GoogleApiClient
         mGeofencing = new Geofencing(this, mGoogleApiClient);
 
-        // retrieve switch from preferences (enabled/disabled)
-        geofencesEnabled = getGeofencesSwitchFromPreferences(this);
+        // retrieve geofences switch value from preferences (enabled/disabled)
+        areGeofencesEnabled = getGeofencesSwitchFromPreferences(this);
 
         mFabAddPlace.setOnClickListener(new View.OnClickListener()
         {
@@ -163,37 +161,6 @@ public class MainActivity extends AppCompatActivity implements
 
         // allow swipe functionality to delete items
         setSwipeForRecyclerView();
-    }
-
-
-    private void setSwipeForRecyclerView()
-    {
-        SwipeUtil swipeHelper = new SwipeUtil(0, ItemTouchHelper.LEFT, this)
-        {
-            @Override
-            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction)
-            {
-                int swipedPosition = viewHolder.getAdapterPosition();
-                placeAdapter.pendingRemoval(swipedPosition);
-            }
-            @Override
-            public int getSwipeDirs(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder)
-            {
-                int position = viewHolder.getAdapterPosition();
-                if (placeAdapter.isPendingRemoval(position))
-                {
-                    return 0;
-                }
-                return super.getSwipeDirs(recyclerView, viewHolder);
-            }
-        };
-        ItemTouchHelper mItemTouchHelper = new ItemTouchHelper(swipeHelper);
-        mItemTouchHelper.attachToRecyclerView(mRecyclerViewPlace);
-
-        // set swipe label
-        swipeHelper.setLeftSwipeLabel(getString(R.string.deleteString));
-        // set swipe background-Color
-        swipeHelper.setLeftcolorCode(ContextCompat.getColor(this, R.color.materialRed200));
     }
 
 
@@ -232,16 +199,16 @@ public class MainActivity extends AppCompatActivity implements
         {
             case PLACES_DB_LOADER:
 
-                List<String> guids = new ArrayList<>();
+                List<String> placeIds = new ArrayList<>();
                 while (cursor.moveToNext())
                 {
-                    guids.add(cursor.getString(cursor.getColumnIndex(PlaceEntry.COLUMN_PLACE_ID)));
+                    placeIds.add(cursor.getString(cursor.getColumnIndex(PlaceEntry.COLUMN_PLACE_ID)));
                 }
 
                 // iterate all Places stored locally retrieving names from google server
                 PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi
                         .getPlaceById(mGoogleApiClient,
-                        guids.toArray(new String[guids.size()]));
+                        placeIds.toArray(new String[placeIds.size()]));
 
                 placeResult.setResultCallback(new ResultCallback<PlaceBuffer>()
                 {
@@ -249,8 +216,8 @@ public class MainActivity extends AppCompatActivity implements
                     public void onResult(@NonNull PlaceBuffer places)
                     {
                         placeAdapter.swapPlaces(places);
-                        mGeofencing.addGeofences(places);
-                        if(geofencesEnabled) mGeofencing.registerAllGeofences();
+                        mGeofencing.addUpdateGeofences(places);
+                        if(areGeofencesEnabled) mGeofencing.registerAllGeofences();
                     }
                 });
                 break;
@@ -265,6 +232,163 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
+    /** Any changes in preferences will trigger this method */
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences pref, String key)
+    {
+        // check which preference trigger the listener
+        if(key.equals(getString(R.string.pref_activate_geofences_key)))
+        {
+            sGeoPrefChange = true;
+            // get the value of the preferences changed
+            areGeofencesEnabled = pref.getBoolean(
+                    getString(R.string.pref_activate_geofences_key), false);
+        }
+    }
+
+
+    @Override
+    public void onStart()
+    {
+        super.onStart();
+        isGooglePlayServicesAvailable(this);
+
+        if (!isNetworkAvailable(this))
+        {
+            showSnackbar(this, findViewById(android.R.id.content),
+                    getString(R.string.no_internet_connection));
+            return;
+        }
+
+        if (sHaveLocationPermission)
+        {
+            // connect the client only if we have permission
+            if (!mGoogleApiClient.isConnecting() || !mGoogleApiClient.isConnected())
+            {
+                mGoogleApiClient.connect();
+            }
+        }
+
+        if (sGeoPrefChange)
+        {
+            if (areGeofencesEnabled)
+            {
+                mGeofencing.registerAllGeofences();
+                showSnackbar(this, mToolbar, getString(R.string.geofences_enabled));
+                mToolbar.setLogo(R.drawable.ic_volume);
+            }
+            else
+            {
+                mGeofencing.unRegisterAllGeofences();
+                showSnackbar(this, mToolbar, getString(R.string.geofences_disabled));
+                mToolbar.setLogo(R.drawable.ic_volume_off);
+            }
+            sGeoPrefChange = false;
+        }
+    }
+
+    @Override
+    public void onStop()
+    {
+        super.onStop();
+        if (sHaveLocationPermission)
+        {
+            // disconnect the client only if we are not opening preferences
+            if(sPreferencesOpened)
+            {
+                // reset boolean
+                sPreferencesOpened = false;
+            }
+            else
+            {
+                if (mGoogleApiClient.isConnecting() || mGoogleApiClient.isConnected())
+                {
+
+Log.e(LOG_TAG, "JAVIER disconnecting....");
+
+                    mGoogleApiClient.disconnect();
+                }
+            }
+        }
+    }
+
+
+    private void setSwipeForRecyclerView()
+    {
+        SwipeUtil swipeHelper = new SwipeUtil(0, ItemTouchHelper.LEFT, this)
+        {
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction)
+            {
+                int swipedPosition = viewHolder.getAdapterPosition();
+                placeAdapter.pendingRemoval(swipedPosition);
+            }
+            @Override
+            public int getSwipeDirs(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder)
+            {
+                int position = viewHolder.getAdapterPosition();
+                if (placeAdapter.isPendingRemoval(position))
+                {
+                    return 0;
+                }
+                return super.getSwipeDirs(recyclerView, viewHolder);
+            }
+        };
+        ItemTouchHelper mItemTouchHelper = new ItemTouchHelper(swipeHelper);
+        mItemTouchHelper.attachToRecyclerView(mRecyclerViewPlace);
+
+        // set swipe label
+        swipeHelper.setLeftSwipeLabel(getString(R.string.deleteString));
+        // set swipe background-Color
+        swipeHelper.setLeftcolorCode(ContextCompat.getColor(this, R.color.materialRed200));
+    }
+
+
+    @Override
+    public void onResume()
+    {
+        // Save and restore position of the RecyclerView
+        super.onResume();
+        mRecyclerViewPlace.getLayoutManager().scrollToPosition(sLastFirstVisiblePosition);
+
+        if(areGeofencesEnabled) mToolbar.setLogo(R.drawable.ic_volume);
+        else mToolbar.setLogo(R.drawable.ic_volume_off);
+
+    }
+
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+        sLastFirstVisiblePosition = ((LinearLayoutManager)mRecyclerViewPlace
+                .getLayoutManager()).findFirstCompletelyVisibleItemPosition();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch (item.getItemId())
+        {
+            case R.id.action_settings:
+                sPreferencesOpened = true;
+                startActivity(new Intent(this, SettingsActivity.class));
+                return true;
+
+            case R.id.action_about:
+                startActivity(new Intent(this, AboutActivity.class));
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    /** Connection callbacks */
     @Override
     public void onConnected(@Nullable Bundle bundle)
     {
@@ -286,144 +410,6 @@ public class MainActivity extends AppCompatActivity implements
         Log.i(LOG_TAG, "Connection has failed " + result.getErrorCode());
     }
 
-
-    /** Any changes in preferences will trigger this method */
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences pref, String key)
-    {
-        // check which preference trigger the listener
-        if(key.equals(getString(R.string.pref_activate_geofences_key)))
-        {
-            sGeoPrefChange = true;
-            // get the value of the preferences changed
-            geofencesEnabled = pref.getBoolean(
-                    getString(R.string.pref_activate_geofences_key), false);
-        }
-    }
-
-
-    @Override
-    public void onResume()
-    {
-        // Save and restore position of the RecyclerView
-        super.onResume();
-        mRecyclerViewPlace.getLayoutManager().scrollToPosition(sLastFirstVisiblePosition);
-    }
-
-
-    @Override
-    public void onPause()
-    {
-        super.onPause();
-        sLastFirstVisiblePosition = ((LinearLayoutManager)mRecyclerViewPlace
-                .getLayoutManager()).findFirstCompletelyVisibleItemPosition();
-    }
-
-
-    @Override
-    public void onStart()
-    {
-        super.onStart();
-
-        isGooglePlayServicesAvailable(this);
-
-        if (!isNetworkAvailable(this))
-        {
-            showSnackbar(this, findViewById(android.R.id.content),
-                    getString(R.string.no_internet_connection));
-            return;
-        }
-
-        if (sHaveLocationPermission)
-        {
-            // connect the client only if we have permission
-            if (!mGoogleApiClient.isConnecting() || !mGoogleApiClient.isConnected())
-            {
-                mGoogleApiClient.connect();
-            }
-        }
-
-        if (geofencesEnabled && sGeoPrefChange)
-        {
-            mGeofencing.registerAllGeofences();
-            showSnackbar(this, mToolbar, getString(R.string.geofences_enabled));
-
-        }
-        else if(!geofencesEnabled && sGeoPrefChange)
-        {
-            mGeofencing.unRegisterAllGeofences();
-            showSnackbar(this, mToolbar, getString(R.string.geofences_disabled));
-        }
-        sGeoPrefChange = false;
-    }
-
-    @Override
-    public void onStop()
-    {
-        super.onStop();
-        if (sHaveLocationPermission)
-        {
-            // disconnect the client only if we are not opening preferences
-            if(sOpeningPreferences)
-            {
-                // reset boolean
-                sOpeningPreferences = false;
-            }
-            else
-            {
-                if (mGoogleApiClient.isConnecting() || mGoogleApiClient.isConnected())
-                {
-                    mGoogleApiClient.disconnect();
-                }
-            }
-        }
-    }
-
-
-    private void addNewPlace()
-    {
-        try
-        {
-            // Start a new Activity for the Place Picker API, this will trigger
-            // onActivityResult when a place is selected or with the user cancels.
-            PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
-            Intent i = builder.build(this);
-            startActivityForResult(i, PLACE_PICKER_REQUEST);
-        }
-        catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e)
-        {
-            Log.e(LOG_TAG, String.format("GooglePlayServices not Available [%s]", e.getMessage()));
-        }
-        catch (Exception e)
-        {
-            Log.e(LOG_TAG, String.format("PlacePicker Exception: %s", e.getMessage()));
-        }
-    }
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
-        switch (item.getItemId())
-        {
-            case R.id.action_settings:
-                sOpeningPreferences = true;
-                startActivity(new Intent(this, SettingsActivity.class));
-                return true;
-
-            case R.id.action_about:
-                startActivity(new Intent(this, AboutActivity.class));
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
 
     /** LOCATION PERMISSION */
     private void askForLocationPermission()
@@ -497,7 +483,28 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    /** ON ACTIVITY RESULT */
+
+    private void addNewPlace()
+    {
+        try
+        {
+            // Start a new Activity for the Place Picker API, this will trigger
+            // onActivityResult when a place is selected or with the user cancels.
+            PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+            Intent i = builder.build(this);
+            startActivityForResult(i, PLACE_PICKER_REQUEST);
+        }
+        catch (GooglePlayServicesRepairableException | GooglePlayServicesNotAvailableException e)
+        {
+            Log.e(LOG_TAG, String.format("GooglePlayServices not Available [%s]", e.getMessage()));
+        }
+        catch (Exception e)
+        {
+            Log.e(LOG_TAG, String.format("PlacePicker Exception: %s", e.getMessage()));
+        }
+    }
+
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
@@ -555,10 +562,11 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onDestroy()
     {
+
         super.onDestroy();
         if (sHaveLocationPermission)
         {
-            // disconnect the client
+            // disconnect the client if it was connected
             if (mGoogleApiClient.isConnecting() || mGoogleApiClient.isConnected())
             {
                 mGoogleApiClient.disconnect();

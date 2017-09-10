@@ -41,7 +41,8 @@ public class GeofenceTransitionsIntentService extends IntentService
         // Get the Geofence Event from the Intent sent through
         GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
 
-Log.e(LOG_TAG, "JAVIER I am in onReceive " + geofencingEvent.getTriggeringLocation().toString());
+Log.e(LOG_TAG, "JAVIER I am in onHandleIntent " +
+        geofencingEvent.getTriggeringLocation().toString());
 
 
         if (geofencingEvent.hasError())
