@@ -16,10 +16,9 @@ import java.util.concurrent.TimeUnit;
 @SuppressWarnings("all")
 public class RegisterGeofencesJob
 {
-    private static final String LOG_TAG = RegisterGeofencesJob.class.getSimpleName();
-
     // Interval at which to re-register geofences
-    private static final int INTERVAL_MINUTES = 60; // every 24 hours 1440
+    //private static final int INTERVAL_MINUTES = 1440; // every 24 hours 1440
+    private static final int INTERVAL_MINUTES = 2;
     private static final int INTERVAL_SECONDS =
             (int)(TimeUnit.MINUTES.toSeconds(INTERVAL_MINUTES));
     private static final int SYNC_FLEXTIME_SECONDS = INTERVAL_SECONDS;
@@ -28,6 +27,7 @@ public class RegisterGeofencesJob
 
     private static boolean sInitialized = false;
 
+
     public synchronized static void scheduleRegisteringGeofences(@NonNull final Context context)
     {
         if (sInitialized) return;
@@ -35,7 +35,7 @@ public class RegisterGeofencesJob
         Driver driver = new GooglePlayDriver(context);
         FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(driver);
 
-        // Create the Job to periodically re-register geofences
+        // Create the Job to periodically re-register geofences since these have an expiration date
         Job constraintReminderJob = dispatcher.newJobBuilder()
 
                 .setService(GeofenceRegistrationFirebaseJobService.class)
@@ -46,10 +46,6 @@ public class RegisterGeofencesJob
                 /*
                  * Network constraints on which this Job should run. In this app, we're using the
                  * device charging constraint so that the job executes in all networks
-                 *
-                 * In a normal app, it might be a good idea to include a preference for this,
-                 * as different users may have different preferences on when you should be
-                 * syncing your application's data.
                  */
                 .setConstraints(Constraint.ON_ANY_NETWORK)
 
@@ -85,5 +81,15 @@ public class RegisterGeofencesJob
 
         // Mark job initialized
         sInitialized = true;
+    }
+
+
+    /** Will get called when user disables geofences in preferences */
+    public static void cancelAllJobs(Context context)
+    {
+        Driver driver = new GooglePlayDriver(context);
+        FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(driver);
+
+        dispatcher.cancelAll();
     }
 }

@@ -4,8 +4,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/pref_fragment"
-    android:name="eu.javimar.shhh.SettingsActivity$LocationPreferenceFragment"
+    android:name="eu.javimar.shhh.view.SettingsActivity$LocationPreferenceFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="eu.javimar.shhh.SettingsActivity">
+    tools:context="eu.javimar.shhh.view.SettingsActivity">
 </fragment>

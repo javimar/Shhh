@@ -9,10 +9,12 @@ import android.content.Loader;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.location.Location;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -27,6 +29,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -35,6 +38,8 @@ import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.PlaceBuffer;
@@ -47,22 +52,28 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+import eu.javimar.shhh.model.GeoPoint;
 import eu.javimar.shhh.model.PlaceContract.PlaceEntry;
-import eu.javimar.shhh.util.SwipeUtil;
+import eu.javimar.shhh.sync.RegisterGeofencesJob;
+import eu.javimar.shhh.util.SwipeUtils;
 import eu.javimar.shhh.view.AboutActivity;
 import eu.javimar.shhh.view.PlaceAdapter;
+import eu.javimar.shhh.view.SettingsActivity;
 
 import static eu.javimar.shhh.util.HelperUtils.PLAY_SERVICES_RESOLUTION_REQUEST;
-import static eu.javimar.shhh.util.HelperUtils.getGeofencesSwitchFromPreferences;
 import static eu.javimar.shhh.util.HelperUtils.isGooglePlayServicesAvailable;
 import static eu.javimar.shhh.util.HelperUtils.isNetworkAvailable;
 import static eu.javimar.shhh.util.HelperUtils.showSnackbar;
+import static eu.javimar.shhh.util.PrefUtils.getGeofencesSwitchFromPreferences;
+import static eu.javimar.shhh.util.PrefUtils.retrieveLongAndLatFromPreferences;
+import static eu.javimar.shhh.util.PrefUtils.updateLongAndLatInPreferences;
 
 public class MainActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         SharedPreferences.OnSharedPreferenceChangeListener,
-        LoaderManager.LoaderCallbacks<Cursor>
+        LoaderManager.LoaderCallbacks<Cursor>,
+        LocationListener
 {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
@@ -75,11 +86,16 @@ public class MainActivity extends AppCompatActivity implements
     private static boolean sGeoPrefChange = false;
     private static boolean sPreferencesOpened = false;
 
+    /** Refresh time */
+    private static final long REFRESH_LOCATION_TIME = 5 * 60 * 1000; // 5 minutes
+
     // Views
     @BindView(R.id.fab) FloatingActionButton mFabAddPlace;
     @BindView(R.id.toolbar) Toolbar mToolbar;
     @BindView(R.id.rv_places) RecyclerView mRecyclerViewPlace;
     @BindView(R.id.tv_empty_view)TextView mEmptyView;
+    @BindView(R.id.iv_empty_image)ImageView mEmptyImage;
+    @BindView(R.id.collapsing_toolbar)CollapsingToolbarLayout mCollapsingToolbarLayout;
 
     // Save the recycler position on screen orientation and when coming back
     private static int sLastFirstVisiblePosition;
@@ -88,11 +104,15 @@ public class MainActivity extends AppCompatActivity implements
 
     // Google API location variable
     GoogleApiClient mGoogleApiClient;
+    LocationRequest mLocationRequest;
+
     // Instance of the Geofencing class
     Geofencing mGeofencing;
     // Allows to keep track of the Preferences for enabling or disabling geofences
-    private boolean areGeofencesEnabled;
+    public static boolean sAreGeofencesEnabled;
 
+    /** Current position */
+    public static GeoPoint sCurrentPosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -104,13 +124,7 @@ public class MainActivity extends AppCompatActivity implements
 
         setSupportActionBar(mToolbar);
         mToolbar.setTitle(R.string.app_name);
-
-        // set recycler view
-        mRecyclerViewPlace.setLayoutManager(new LinearLayoutManager(this));
-        mRecyclerViewPlace.addItemDecoration(new DividerItemDecoration(this,
-                LinearLayoutManager.VERTICAL));
-        placeAdapter = new PlaceAdapter(this, null);
-        mRecyclerViewPlace.setAdapter(placeAdapter);
+        mCollapsingToolbarLayout.setTitleEnabled(false);
 
         // check if Google Play Services is installed
         isGooglePlayServicesAvailable(this);
@@ -119,7 +133,6 @@ public class MainActivity extends AppCompatActivity implements
         askForLocationPermission();
 
         // Build up the LocationServices API client
-        // Also uses enableAutoManage to automatically when to connect/suspend the client
         mGoogleApiClient= new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -128,26 +141,37 @@ public class MainActivity extends AppCompatActivity implements
                 //.enableAutoManage(this, this)
                 .build();
 
+        // check if we have last known coordinates, only at app start
+        if(sCurrentPosition == null) retrieveLongAndLatFromPreferences(this);
+
         // instantiate the Geofences class, passing the GoogleApiClient
         mGeofencing = new Geofencing(this, mGoogleApiClient);
 
         // retrieve geofences switch value from preferences (enabled/disabled)
-        areGeofencesEnabled = getGeofencesSwitchFromPreferences(this);
+        sAreGeofencesEnabled = getGeofencesSwitchFromPreferences(this);
+
+        // set recycler view
+        mRecyclerViewPlace.setLayoutManager(new LinearLayoutManager(this));
+        mRecyclerViewPlace.addItemDecoration(new DividerItemDecoration(this,
+                LinearLayoutManager.VERTICAL));
+        placeAdapter = new PlaceAdapter(this, null, mGeofencing);
+        mRecyclerViewPlace.setAdapter(placeAdapter);
+
 
         mFabAddPlace.setOnClickListener(new View.OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                if (isNetworkAvailable(MainActivity.this))
-                {
-                    addNewPlace();
-                }
-                else
-                {
-                    showSnackbar(MainActivity.this, mToolbar,
-                            getString(R.string.no_internet_connection));
-                }
+            if (isNetworkAvailable(MainActivity.this))
+            {
+                addNewPlace();
+            }
+            else
+            {
+                showSnackbar(MainActivity.this, mToolbar,
+                        getString(R.string.no_internet_connection));
+            }
             }
         });
 
@@ -157,7 +181,7 @@ public class MainActivity extends AppCompatActivity implements
                 .registerOnSharedPreferenceChangeListener(this);
 
         // schedule re-registration of geofences once they expire
-        //RegisterGeofencesJob.scheduleRegisteringGeofences(this);
+        if(sAreGeofencesEnabled) RegisterGeofencesJob.scheduleRegisteringGeofences(this);
 
         // allow swipe functionality to delete items
         setSwipeForRecyclerView();
@@ -189,11 +213,13 @@ public class MainActivity extends AppCompatActivity implements
         {
             placeAdapter.swapPlaces(null);
             mEmptyView.setVisibility(View.VISIBLE);
+            mEmptyImage.setVisibility(View.VISIBLE);
             return;
         }
         else
         {
             mEmptyView.setVisibility(View.GONE);
+            mEmptyImage.setVisibility(View.GONE);
         }
         switch (loader.getId())
         {
@@ -217,7 +243,7 @@ public class MainActivity extends AppCompatActivity implements
                     {
                         placeAdapter.swapPlaces(places);
                         mGeofencing.addUpdateGeofences(places);
-                        if(areGeofencesEnabled) mGeofencing.registerAllGeofences();
+                        if(sAreGeofencesEnabled) mGeofencing.registerAllGeofences();
                     }
                 });
                 break;
@@ -241,8 +267,17 @@ public class MainActivity extends AppCompatActivity implements
         {
             sGeoPrefChange = true;
             // get the value of the preferences changed
-            areGeofencesEnabled = pref.getBoolean(
-                    getString(R.string.pref_activate_geofences_key), false);
+            sAreGeofencesEnabled = getGeofencesSwitchFromPreferences(this);
+            if(sAreGeofencesEnabled)
+            {
+                // schedule re-registration of geofences once they expire
+                RegisterGeofencesJob.scheduleRegisteringGeofences(this);
+            }
+            else
+            {
+                // cancel all jobs
+                RegisterGeofencesJob.cancelAllJobs(this);
+            }
         }
     }
 
@@ -271,17 +306,15 @@ public class MainActivity extends AppCompatActivity implements
 
         if (sGeoPrefChange)
         {
-            if (areGeofencesEnabled)
+            if (sAreGeofencesEnabled)
             {
                 mGeofencing.registerAllGeofences();
                 showSnackbar(this, mToolbar, getString(R.string.geofences_enabled));
-                mToolbar.setLogo(R.drawable.ic_volume);
             }
             else
             {
                 mGeofencing.unRegisterAllGeofences();
                 showSnackbar(this, mToolbar, getString(R.string.geofences_disabled));
-                mToolbar.setLogo(R.drawable.ic_volume_off);
             }
             sGeoPrefChange = false;
         }
@@ -303,19 +336,23 @@ public class MainActivity extends AppCompatActivity implements
             {
                 if (mGoogleApiClient.isConnecting() || mGoogleApiClient.isConnected())
                 {
-
-Log.e(LOG_TAG, "JAVIER disconnecting....");
-
                     mGoogleApiClient.disconnect();
                 }
             }
+        }
+        if(sCurrentPosition != null)
+        {
+            // update location in preferences
+            updateLongAndLatInPreferences(this,
+                    new GeoPoint(sCurrentPosition.getLongitude(),
+                            sCurrentPosition.getLatitude()));
         }
     }
 
 
     private void setSwipeForRecyclerView()
     {
-        SwipeUtil swipeHelper = new SwipeUtil(0, ItemTouchHelper.LEFT, this)
+        SwipeUtils swipeHelper = new SwipeUtils(0, ItemTouchHelper.LEFT, this)
         {
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction)
@@ -351,9 +388,8 @@ Log.e(LOG_TAG, "JAVIER disconnecting....");
         super.onResume();
         mRecyclerViewPlace.getLayoutManager().scrollToPosition(sLastFirstVisiblePosition);
 
-        if(areGeofencesEnabled) mToolbar.setLogo(R.drawable.ic_volume);
-        else mToolbar.setLogo(R.drawable.ic_volume_off);
-
+        if(sAreGeofencesEnabled) mToolbar.setLogo(R.drawable.ic_volume_off);
+        else mToolbar.setLogo(R.drawable.ic_volume);
     }
 
     @Override
@@ -392,6 +428,24 @@ Log.e(LOG_TAG, "JAVIER disconnecting....");
     @Override
     public void onConnected(@Nullable Bundle bundle)
     {
+        mLocationRequest = LocationRequest.create();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        mLocationRequest.setInterval(REFRESH_LOCATION_TIME);
+
+        if(sHaveLocationPermission)
+        {
+            try
+            {
+                LocationServices.FusedLocationApi
+                        .requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+            }
+            catch (SecurityException securityException)
+            {
+                // Catch exception generated if the app does not use ACCESS_FINE_LOCATION permission.
+                Log.e(LOG_TAG, securityException.getMessage());
+            }
+        }
+
         getLoaderManager().restartLoader(PLACES_DB_LOADER, null, this);
     }
 
@@ -410,6 +464,16 @@ Log.e(LOG_TAG, "JAVIER disconnecting....");
         Log.i(LOG_TAG, "Connection has failed " + result.getErrorCode());
     }
 
+    /** Capture the location info in here */
+    @Override
+    public void onLocationChanged(Location location)
+    {
+        if (location != null)
+        {
+            sCurrentPosition.setLatitude(location.getLatitude());
+            sCurrentPosition.setLongitude(location.getLongitude());
+        }
+    }
 
     /** LOCATION PERMISSION */
     private void askForLocationPermission()
@@ -571,6 +635,15 @@ Log.e(LOG_TAG, "JAVIER disconnecting....");
             {
                 mGoogleApiClient.disconnect();
             }
+        }
+
+        // store last known coordinates
+        if(sCurrentPosition != null)
+        {
+            // update location in preferences
+            updateLongAndLatInPreferences(this,
+                    new GeoPoint(sCurrentPosition.getLongitude(),
+                            sCurrentPosition.getLatitude()));
         }
     }
 }

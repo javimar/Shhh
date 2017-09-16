@@ -1,14 +1,20 @@
-package eu.javimar.shhh;
+package eu.javimar.shhh.view;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.SwitchPreference;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.MenuItem;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import eu.javimar.shhh.R;
 
 
 public class SettingsActivity extends AppCompatActivity
@@ -33,9 +39,12 @@ public class SettingsActivity extends AppCompatActivity
             // update the preference summary when the settings activity is launched.
             // Given the key of a preference, we use findPreference to get the Preference object,
             // and setup the preference using a helper method called bindPreferenceSummaryToValue().
-            Preference geoType =
-                    findPreference(getString(R.string.pref_activate_geofences_key));
-            bindPreferenceSummaryToValue(geoType);
+            List<Preference> pref = new ArrayList<Preference>();
+
+            pref.add(findPreference(getString(R.string.pref_activate_geofences_key)));
+            pref.add(findPreference(getString(R.string.pref_activate_notification_key)));
+
+            bindPreferenceSummaryToValue(pref);
         }
 
 
@@ -45,15 +54,29 @@ public class SettingsActivity extends AppCompatActivity
          * the SharedPreferences on the device, and display that in the preference summary
          * (so that the user can see the current value of the preference).
          */
-        private void bindPreferenceSummaryToValue(Preference preference)
+        private void bindPreferenceSummaryToValue(List<Preference> pref)
         {
-            preference.setOnPreferenceChangeListener(this);
+            Iterator<Preference> iterator = pref.iterator();
+            Preference preference;
 
-            SharedPreferences preferences =
-                    PreferenceManager.getDefaultSharedPreferences(preference.getContext());
+            SharedPreferences sharedPreferences =
+                    PreferenceManager.getDefaultSharedPreferences(pref.get(0).getContext());
 
-            boolean pref = preferences.getBoolean(preference.getKey(), false);
-            onPreferenceChange(preference, pref);
+            while(iterator.hasNext())
+            {
+                preference = iterator.next();
+                preference.setOnPreferenceChangeListener(this);
+                if(preference instanceof CheckBoxPreference || preference instanceof SwitchPreference)
+                {
+                    Boolean prefBoolean = sharedPreferences.getBoolean(preference.getKey(), true);
+                    onPreferenceChange(preference, prefBoolean);
+                }
+                else
+                {
+                    String preferenceString = sharedPreferences.getString(preference.getKey(), "");
+                    onPreferenceChange(preference, preferenceString);
+                }
+            }
         }
 
 

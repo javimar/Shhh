@@ -18,7 +18,7 @@ import com.google.android.gms.location.places.PlaceBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import eu.javimar.shhh.sync.GeofenceTransitionsIntentService;
+import eu.javimar.shhh.sync.GeofenceTransitionsBroadcastReceiver;
 
 @SuppressWarnings("all")
 /**
@@ -35,9 +35,9 @@ public class Geofencing implements ResultCallback
 {
     // Constants
     public static final String LOG_TAG = Geofencing.class.getSimpleName();
-    private static final float GEOFENCE_RADIUS = 50; // 50 meters
-    private static final long GEOFENCE_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours in millis
-    //private static final long GEOFENCE_TIMEOUT = 5 * 60 * 1000; // 5'
+    private static final float GEOFENCE_RADIUS = 75f; // in meters
+    //private static final long GEOFENCE_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours in millis
+    private static final long GEOFENCE_TIMEOUT = 10 * 60 * 1000; // 10'
 
     private List<Geofence> mGeofenceList;
     private PendingIntent mGeofencePendingIntent;
@@ -66,10 +66,14 @@ public class Geofencing implements ResultCallback
         if (mGoogleApiClient == null || !mGoogleApiClient.isConnected() ||
                 mGeofenceList == null || mGeofenceList.size() == 0)
         {
+Log.e(LOG_TAG, "JAVIER REGISTERING ME PIRO size= " + mGeofenceList.size());
+Log.e(LOG_TAG, "JAVIER REGISTERING ME PIRO API= " + mGoogleApiClient);
             return;
         }
         try
         {
+Log.e(LOG_TAG, "JAVIER REGISTERING GEOFENCES\n");
+
             // Add the ApiClient, the request and the pending intent
             LocationServices.GeofencingApi.addGeofences(
                     mGoogleApiClient,
@@ -93,6 +97,7 @@ public class Geofencing implements ResultCallback
         }
         try
         {
+Log.e(LOG_TAG, "JAVIER UNREGISTERING GEOFENCES\n");
             LocationServices.GeofencingApi.removeGeofences(
                     mGoogleApiClient,
                     // same pending intent that was used in registerGeofences
@@ -153,18 +158,17 @@ public class Geofencing implements ResultCallback
         builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
 
 
-Log.e(LOG_TAG, "JAVIER lista size= " + mGeofenceList.size());
-
-
+Log.e(LOG_TAG, "JAVIER getGeofencingRequest mGeofenceList size= " + mGeofenceList.size());
 
         builder.addGeofences(mGeofenceList);
+
+
+
         return builder.build();
     }
 
     /**
      *  Specify which intent to launch when the geofence entry or exit event, triggers.
-     *  In this case we use a BroadcastReceiver so everytime trigger is launch, the BR onReceive()
-     *  is run
      */
     private PendingIntent getGeofencePendingIntent()
     {
@@ -175,8 +179,8 @@ Log.e(LOG_TAG, "JAVIER lista size= " + mGeofenceList.size());
         }
 
         // FLAG_UPDATE_CURRENT allows for reusing this Intent so no need to create new one
-        Intent intent = new Intent(mContext, GeofenceTransitionsIntentService.class);
-        mGeofencePendingIntent = PendingIntent.getService(mContext, 0, intent,
+        Intent intent = new Intent(mContext, GeofenceTransitionsBroadcastReceiver.class);
+        mGeofencePendingIntent = PendingIntent.getBroadcast(mContext, 0, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
 
         return mGeofencePendingIntent;
@@ -187,9 +191,7 @@ Log.e(LOG_TAG, "JAVIER lista size= " + mGeofenceList.size());
     {
 
 
-Log.e(LOG_TAG, "JAVIER STATUS= " + result.getStatus().toString());
-
-
+Log.e(LOG_TAG, "JAVIER STATUS= " + result.getStatus().getStatus().toString());
 
 
 

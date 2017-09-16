@@ -2,12 +2,9 @@ package eu.javimar.shhh.util;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
@@ -18,7 +15,6 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
 import eu.javimar.shhh.R;
-import eu.javimar.shhh.model.PlaceContract.PlaceEntry;
 
 
 public final class HelperUtils
@@ -72,14 +68,6 @@ public final class HelperUtils
         textView.setTextColor(ContextCompat.getColor(context, R.color.lightBlue300));
         snack.show();
     }
-
-
-    public static boolean getGeofencesSwitchFromPreferences(Context context)
-    {
-        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
-        return pref.getBoolean(context.getString(R.string.pref_activate_geofences_key), false);
-    }
-
 
 
     /**

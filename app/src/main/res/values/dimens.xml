@@ -10,5 +10,7 @@
 
     <dimen name="ic_clear_margin">56dp</dimen>
 
+    <dimen name="appbar_header_height">128dp</dimen>
+    <dimen name="activity_margin_content">24dp</dimen>
 
 </resources>

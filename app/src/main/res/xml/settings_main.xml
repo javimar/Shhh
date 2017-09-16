@@ -8,10 +8,21 @@
         android:title="@string/pref_location_label"
         android:layout="@layout/preference_category">
         <SwitchPreference
-            android:defaultValue="false"
+            android:defaultValue="true"
             android:key="@string/pref_activate_geofences_key"
-            android:summary="@string/pref_geofence_disabled"
+            android:summary="@string/pref_geofence_enabled"
             android:title="@string/pref_geofence_title" />
+    </PreferenceCategory>
+
+
+    <PreferenceCategory
+        android:title="@string/pref_notification_label"
+        android:layout="@layout/preference_category">
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="@string/pref_activate_notification_key"
+            android:summary="@string/pref_notification_disabled"
+            android:title="@string/pref_notification_title" />
     </PreferenceCategory>
 
 </PreferenceScreen>

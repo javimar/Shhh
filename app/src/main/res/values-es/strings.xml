@@ -1,0 +1,66 @@
+<resources>
+
+    <!-- ACTIVITY NAMES -->
+    <string name="activity_settings">Ajustes</string>
+    <string name="activity_about">Acerca de Shhh!</string>
+
+    <!-- PREFERENCES SCREEN -->
+    <string name="pref_location_label">UBICACIÓN</string>
+    <string name="pref_notification_label">NOTIFICACIÓN</string>
+    <string name="pref_settings_label">Ajustes</string>
+
+    <string name="pref_geofence_enabled">Habilitados</string>
+    <string name="pref_geofence_disabled">Deshabilitados</string>
+    <string name="pref_notification_enabled">Habilitadas</string>
+    <string name="pref_notification_disabled">Deshabilitadas</string>
+    <string name="pref_geofence_title">Geoperímetros</string>
+    <string name="pref_notification_title">Registro de Geoperímetros</string>
+
+    <!-- MENU LABELS -->
+    <string name="action_settings">Ajustes</string>
+    <string name="action_about">Acerca de</string>
+
+    <!-- INFO -->
+    <string name="deleteString">Borrar</string>
+    <string name="deletedString">Borrado!</string>
+    <string name="undoString">¿Deshacer?</string>
+
+    <!-- ADAPTER -->
+    <string name="adapter_delete_ok">Lugar borrado</string>
+    <string name="adapter_delete_failed">Fallo al borrar lugar</string>
+
+    <!-- CONTENT DESCRIPTION -->
+    <string name="cd_location">Imagen del icono de ubicación</string>
+    <string name="cd_powered_by">Imagen del icono powered by google</string>
+    <string name="cd_app">Imagen del icono de la app</string>
+    <string name="cd_empty_image">Imagen de una casa vacía</string>
+
+    <!-- Strings ERRORS -->
+    <string name="no_internet_connection">No hay conexión a Internet</string>
+    <string name="permission_location">¡Necesito el permiso de ubicación!</string>
+    <string name="google_play_error">Google Play Services se tiene que instalar</string>
+    <string name="no_places_in_list">¿No te sientes solo?\nAñade un lugar</string>
+
+    <!-- GEOFENCES -->
+    <string name="geofences_enabled">Se han habilitado los Geoperímetros</string>
+    <string name="geofences_disabled">Se han deshabilitado los Geoperímetros</string>
+
+    <string name="geofence_silent_mode">Modo silencio activado</string>
+    <string name="geofences_touch_to_launch">Pulsa para lanzar la app</string>
+    <string name="geofences_back_to_normal">Modo sliencio desactivado :)</string>
+
+    <!-- NOTIFICATION UTILS -->
+    <string name="notification_dismiss">Descartar</string>
+    <string name="notification_registration">Re-registro de Geoperímetros</string>
+    <string name="notification_nextrun">Próximo registro en 24h</string>
+
+    <!-- ABOUT -->
+    <string name="about_location">Tu ubicación:\n\n%s</string>
+
+    <!-- CARDINAL POINTS -->
+    <string name="location_east">ESTE</string>
+    <string name="location_west">OESTE</string>
+    <string name="location_north">NORTE</string>
+    <string name="location_south">SUR</string>
+
+</resources>

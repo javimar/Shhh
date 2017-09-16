@@ -14,7 +14,7 @@ import android.view.View;
 import eu.javimar.shhh.R;
 
 @SuppressWarnings("WeakerAccess")
-public abstract class SwipeUtil extends ItemTouchHelper.SimpleCallback
+public abstract class SwipeUtils extends ItemTouchHelper.SimpleCallback
 {
     private Drawable background;
     private Drawable deleteIcon;
@@ -27,7 +27,7 @@ public abstract class SwipeUtil extends ItemTouchHelper.SimpleCallback
     private int leftcolorCode;
     private String leftSwipeLabel;
 
-    public SwipeUtil(int dragDirs, int swipeDirs, Context context)
+    public SwipeUtils(int dragDirs, int swipeDirs, Context context)
     {
         super(dragDirs, swipeDirs);
         this.context = context;

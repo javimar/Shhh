@@ -27,7 +27,7 @@
         </activity>
 
         <activity
-            android:name=".SettingsActivity"
+            android:name=".view.SettingsActivity"
             android:parentActivityName=".MainActivity"
             android:label="@string/activity_settings">
             <meta-data
@@ -37,6 +37,7 @@
 
         <activity
             android:name=".view.AboutActivity"
+            android:screenOrientation="portrait"
             android:parentActivityName=".MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -47,13 +48,18 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/API_KEY" />
 
-        <service
-            android:name="sync.GeofenceTransitionsIntentService"
+        <receiver
+            android:name=".sync.GeofenceTransitionsBroadcastReceiver"
             android:exported="false"/>
 
         <provider
             android:name="eu.javimar.shhh.model.PlaceContentProvider"
             android:authorities="eu.javimar.shhh"
+            android:exported="false"/>
+
+        <!--This is required for immediate syncs -->
+        <service
+            android:name=".sync.RegisteringIntentService"
             android:exported="false"/>
 
         <service

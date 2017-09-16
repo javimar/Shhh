@@ -6,12 +6,10 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.location.places.PlaceBuffer;
@@ -22,18 +20,20 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import eu.javimar.shhh.MainActivity;
+import eu.javimar.shhh.Geofencing;
 import eu.javimar.shhh.R;
 import eu.javimar.shhh.model.GeoPoint;
 import eu.javimar.shhh.model.PlaceContract.PlaceEntry;
 
+import static eu.javimar.shhh.MainActivity.sAreGeofencesEnabled;
 import static eu.javimar.shhh.util.HelperUtils.deletePlaceFromDb;
 
 
 @SuppressWarnings("all")
 public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHolder>
 {
-    private Context mContext;
+    private Context context;
+    private Geofencing geofencing;
 
     /**
      * To Keep track of swiped Items create arraylist “itemsPendingRemoval”
@@ -51,10 +51,11 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
     private PlaceBuffer mPlaces;
 
 
-    public PlaceAdapter(Context context, PlaceBuffer places)
+    public PlaceAdapter(Context context, PlaceBuffer places, Geofencing geofencing)
     {
-        this.mContext = context;
+        this.context = context;
         this.mPlaces = places;
+        this.geofencing = geofencing;
         itemsPendingRemoval = new ArrayList<>();
     }
 
@@ -63,7 +64,7 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
     public PlaceViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
     {
         // Get the RecyclerView item layout
-        LayoutInflater inflater = LayoutInflater.from(mContext);
+        LayoutInflater inflater = LayoutInflater.from(context);
         View view = inflater.inflate(R.layout.place_item, parent, false);
         return new PlaceViewHolder(view);
     }
@@ -147,9 +148,12 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
         // delete _ID from db
         Uri uri = ContentUris.withAppendedId(PlaceEntry.CONTENT_URI,
                 getIdPlaceFromDb(position));
-        deletePlaceFromDb(mContext, uri);
+        deletePlaceFromDb(context, uri);
 
         notifyItemRemoved(position);
+
+        // after deleting a place, need to refresh geofences if enabled
+        if(sAreGeofencesEnabled) geofencing.unRegisterAllGeofences();
     }
 
 
@@ -169,7 +173,7 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
             String [] selectionArgs = new String[]
                     { String.valueOf(mPlaces.get(position).getId()) };
 
-            Cursor cursor = mContext.getContentResolver()
+            Cursor cursor = context.getContentResolver()
                     .query(PlaceEntry.CONTENT_URI, projection, selection, selectionArgs, null);
 
             if (cursor == null || cursor.getCount() < 1)
@@ -199,9 +203,9 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
 
     private GeoPoint getCoordinatesFromPlace(int position)
     {
-        double wifiLng = mPlaces.get(position).getLatLng().longitude;
-        double wifiLat = mPlaces.get(position).getLatLng().latitude;
-        return new GeoPoint(wifiLng, wifiLat);
+        double placeLng = mPlaces.get(position).getLatLng().longitude;
+        double placeLat = mPlaces.get(position).getLatLng().latitude;
+        return new GeoPoint(placeLng, placeLat);
     }
 
 
@@ -224,7 +228,7 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
     {
         @BindView(R.id.tv_place_name)TextView nameTextView;
         @BindView(R.id.tv_place_address)TextView addressTextView;
-        @BindView(R.id.regularLayout)RelativeLayout regularLayout;
+        @BindView(R.id.regularLayout)LinearLayout regularLayout;
         @BindView(R.id.swipeLayout)LinearLayout swipeLayout;
         @BindView(R.id.undo)TextView undoTextView;
 

@@ -1,16 +1,15 @@
 package eu.javimar.shhh.sync;
 
-import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.os.Build;
-import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -21,28 +20,19 @@ import com.google.android.gms.location.GeofencingEvent;
 import eu.javimar.shhh.MainActivity;
 import eu.javimar.shhh.R;
 
+import static eu.javimar.shhh.util.NotificationUtils.GEO_CHANNEL_ID;
 
-public class GeofenceTransitionsIntentService extends IntentService
+
+public class GeofenceTransitionsBroadcastReceiver extends BroadcastReceiver
 {
-    public static final String LOG_TAG = GeofenceTransitionsIntentService.class.getSimpleName();
-
-    private Context context;
-
-    public GeofenceTransitionsIntentService()
-    {
-        super(LOG_TAG);
-        context = getApplicationContext();
-    }
-
+    public static final String LOG_TAG = GeofenceTransitionsBroadcastReceiver.class.getSimpleName();
 
     @Override
-    protected void onHandleIntent(@Nullable Intent intent)
+    public void onReceive(Context context, Intent intent)
     {
         // Get the Geofence Event from the Intent sent through
         GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
-
-Log.e(LOG_TAG, "JAVIER I am in onHandleIntent " +
-        geofencingEvent.getTriggeringLocation().toString());
+        geofencingEvent.getTriggeringLocation().toString();
 
 
         if (geofencingEvent.hasError())
@@ -101,7 +91,7 @@ Log.e(LOG_TAG, "JAVIER I am in onHandleIntent " +
                 stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
 
         // Get a notification builder
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, GEO_CHANNEL_ID);
 
         // Check the transition type to display the relevant icon image
         if (transitionType == Geofence.GEOFENCE_TRANSITION_ENTER)
@@ -109,7 +99,7 @@ Log.e(LOG_TAG, "JAVIER I am in onHandleIntent " +
             builder.setSmallIcon(R.drawable.ic_volume_off)
                     .setLargeIcon(BitmapFactory.decodeResource(context.getResources(),
                             R.drawable.ic_volume_off))
-                    .setColor(ContextCompat.getColor(context, R.color.colorAccent))
+                    .setColor(ContextCompat.getColor(context, R.color.lightBlue300))
                     .setContentTitle(context.getString(R.string.geofence_silent_mode));
         }
         else if (transitionType == Geofence.GEOFENCE_TRANSITION_EXIT)
@@ -117,18 +107,21 @@ Log.e(LOG_TAG, "JAVIER I am in onHandleIntent " +
             builder.setSmallIcon(R.drawable.ic_volume)
                     .setLargeIcon(BitmapFactory.decodeResource(context.getResources(),
                             R.drawable.ic_volume))
-                    .setColor(ContextCompat.getColor(context, R.color.colorPrimary))
+                    .setColor(ContextCompat.getColor(context, R.color.greenAccent700))
                     .setContentTitle(context.getString(R.string.geofences_back_to_normal));
         }
 
         // Continue building the notification
         builder
                 .setWhen(System.currentTimeMillis())
-                .setDefaults(Notification.DEFAULT_VIBRATE | Notification.DEFAULT_LIGHTS)
+                .setDefaults(Notification.DEFAULT_VIBRATE |
+                             Notification.DEFAULT_LIGHTS |
+                             Notification.DEFAULT_SOUND)
                 .setContentText(context.getString(R.string.geofences_touch_to_launch))
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(
                         context.getString(R.string.geofences_touch_to_launch)))
                 .setContentIntent(notificationPendingIntent);
+
 
         // Get an instance of the Notification manager
         NotificationManager nm =

@@ -1,56 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/regularLayout"
     android:layout_width="match_parent"
-    android:layout_height="72dp"
-    xmlns:tools="http://schemas.android.com/tools"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:layout_height="?android:attr/listPreferredItemHeight"
+    android:orientation="horizontal"
+    android:paddingEnd="16dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingStart="16dp">
+
+    <ImageView
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center_vertical"
+        android:contentDescription="@string/cd_location"
+        android:gravity="center"
+        app:srcCompat="@drawable/ic_place_accent" />
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:orientation="horizontal">
-
-        <ImageView
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_gravity="fill"
-            android:layout_marginEnd="16dp"
-            app:srcCompat="@drawable/ic_place_accent"
-            android:contentDescription="@string/cd_location" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="8dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/tv_place_name"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/tv_place_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="start"
-                android:maxLines="1"
-                android:ellipsize="marquee"
-                android:textAlignment="viewStart"
-                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                android:textColor="@color/primary_text"
-                tools:text="Museo de Ciencias"/>
-
-            <TextView
-                android:id="@+id/tv_place_address"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="start"
-                android:maxLines="2"
-                android:ellipsize="marquee"
-                tools:text="Calle Velazquez 27"
-                android:textAlignment="viewStart"
-                android:textAppearance="@style/TextAppearance.AppCompat.Small" />
-        </LinearLayout>
-
+            android:layout_gravity="start"
+            android:ellipsize="marquee"
+            android:maxLines="1"
+            android:textAlignment="viewStart"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textColor="@color/primary_text"
+            tools:text="Museo de Ciencias" />
+        <TextView
+            android:id="@+id/tv_place_address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:ellipsize="marquee"
+            android:maxLines="2"
+            android:paddingTop="2dp"
+            android:textAlignment="viewStart"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small"
+            tools:text="Calle Velazquez 27" />
     </LinearLayout>
 
-</RelativeLayout>
+</LinearLayout>
