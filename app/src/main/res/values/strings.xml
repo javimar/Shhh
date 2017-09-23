@@ -1,6 +1,6 @@
 <resources>
 
-    <string name="app_name">Shhh!</string>
+    <string name="app_name" translatable="false">Shhh!</string>
 
     <!-- ACTIVITY NAMES -->
     <string name="activity_settings">Settings</string>
@@ -8,7 +8,7 @@
 
     <!-- PREFERENCES SCREEN -->
     <string name="pref_location_label">LOCATION</string>
-    <string name="pref_notification_label">NOTIFICATION</string>
+    <string name="pref_notification_label">NOTIFICATIONS</string>
     <string name="pref_settings_label">Settings</string>
 
     <string name="pref_activate_geofences_key" translatable="false">geofencesKey</string>
@@ -20,10 +20,14 @@
     <string name="pref_notification_disabled">Disabled</string>
     <string name="pref_geofence_title">Geofences</string>
     <string name="pref_notification_title">Geofences registration</string>
+    <string name="pref_radius_title">Geofence radius in meters</string>
+    <string name="pref_radius_hint">recommended 50–200</string>
 
     <!-- PREFERENCES INTERNAL KEYS -->
     <string name="pref_latitude_key" translatable="false">latitudeKey</string>
     <string name="pref_longtitude_key" translatable="false">longtitudeKey</string>
+    <string name="pref_georadius_key" translatable="false">radiusKey</string>
+    <string name="pref_jobscheduled_key" translatable="false">jobscheduledKey</string>
 
     <!-- MENU LABELS -->
     <string name="action_settings">Settings</string>
@@ -43,6 +47,7 @@
     <string name="cd_powered_by">Image of the powered by google icon</string>
     <string name="cd_app">Image of the icon app</string>
     <string name="cd_empty_image">Image of an empty house</string>
+    <string name="cd_header">Image of clouds in the sky</string>
 
     <!-- Strings ERRORS -->
     <string name="no_internet_connection">There is no Internet connection!</string>

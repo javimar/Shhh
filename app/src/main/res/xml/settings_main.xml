@@ -8,18 +8,34 @@
         android:title="@string/pref_location_label"
         android:layout="@layout/preference_category">
         <SwitchPreference
-            android:defaultValue="true"
+            android:defaultValue="false"
             android:key="@string/pref_activate_geofences_key"
-            android:summary="@string/pref_geofence_enabled"
+            android:summary="@string/pref_geofence_disabled"
             android:title="@string/pref_geofence_title" />
-    </PreferenceCategory>
 
+        <EditTextPreference
+            android:autoText="false"
+            android:defaultValue="50"
+            android:key="@string/pref_georadius_key"
+            android:dependency="@string/pref_activate_geofences_key"
+            android:hint="@string/pref_radius_hint"
+            android:inputType="number"
+            android:numeric="integer"
+            android:maxLength="3"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="50"
+            android:title="@string/pref_radius_title" />
+
+    </PreferenceCategory>
 
     <PreferenceCategory
         android:title="@string/pref_notification_label"
         android:layout="@layout/preference_category">
         <SwitchPreference
+            android:dependency="@string/pref_activate_geofences_key"
             android:defaultValue="false"
+            android:layout="?android:attr/preferenceLayoutChild"
             android:key="@string/pref_activate_notification_key"
             android:summary="@string/pref_notification_disabled"
             android:title="@string/pref_notification_title" />

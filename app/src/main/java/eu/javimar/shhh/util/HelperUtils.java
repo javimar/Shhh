@@ -2,6 +2,7 @@ package eu.javimar.shhh.util;
 
 import android.app.Activity;
 import android.content.Context;
+import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -15,6 +16,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
 import eu.javimar.shhh.R;
+import eu.javimar.shhh.model.PlaceContract;
 
 
 public final class HelperUtils
@@ -101,4 +103,26 @@ public final class HelperUtils
         }
     }
 
+    /** Returns true if database has no elements */
+    public static boolean isDatabaseEmpty(Context context)
+    {
+        Cursor cursor = context.getContentResolver()
+                .query(PlaceContract.PlaceEntry.CONTENT_URI, null, null, null, null);
+        if (cursor == null || cursor.getCount() < 1)
+        {
+            return true;
+        }
+        else
+        {
+            cursor.close();
+            return false;
+        }
+    }
+
+
+    public static int convertDipsToPx(Context context, float dips)
+    {
+        float density = context.getResources().getDisplayMetrics().density;
+        return (int) (dips * density);
+    }
 }

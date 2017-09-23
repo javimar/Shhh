@@ -32,13 +32,13 @@ dependencies {
     compile "com.android.support:recyclerview-v7:${supportLibVersion}"
     compile "com.android.support:design:${supportLibVersion}"
 
-    //compile 'com.google.android.gms:play-services-places:11.0.4'
-    //compile 'com.google.android.gms:play-services-location:11.0.4'
-    compile 'com.google.android.gms:play-services-places:10.0.0'
-    compile 'com.google.android.gms:play-services-location:10.0.0'
+    compile 'com.google.android.gms:play-services-places:11.0.4'
+    compile 'com.google.android.gms:play-services-location:11.0.4'
 
     compile 'com.firebase:firebase-jobdispatcher:0.8.1'
 
     compile 'com.jakewharton:butterknife:8.4.0'
     apt 'com.jakewharton:butterknife-compiler:8.4.0'
+
+    compile 'org.greenrobot:eventbus:3.0.0'
 }

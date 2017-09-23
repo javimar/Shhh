@@ -43,6 +43,7 @@ public class SettingsActivity extends AppCompatActivity
 
             pref.add(findPreference(getString(R.string.pref_activate_geofences_key)));
             pref.add(findPreference(getString(R.string.pref_activate_notification_key)));
+            pref.add(findPreference(getString(R.string.pref_georadius_key)));
 
             bindPreferenceSummaryToValue(pref);
         }
@@ -68,12 +69,12 @@ public class SettingsActivity extends AppCompatActivity
                 preference.setOnPreferenceChangeListener(this);
                 if(preference instanceof CheckBoxPreference || preference instanceof SwitchPreference)
                 {
-                    Boolean prefBoolean = sharedPreferences.getBoolean(preference.getKey(), true);
+                    Boolean prefBoolean = sharedPreferences.getBoolean(preference.getKey(), false);
                     onPreferenceChange(preference, prefBoolean);
                 }
                 else
                 {
-                    String preferenceString = sharedPreferences.getString(preference.getKey(), "");
+                    String preferenceString = sharedPreferences.getString(preference.getKey(), "50");
                     onPreferenceChange(preference, preferenceString);
                 }
             }
@@ -98,16 +99,25 @@ public class SettingsActivity extends AppCompatActivity
                 switch (stringValue)
                 {
                     case "true":
-                        preference.setSummary(R.string.pref_geofence_enabled);
+                        if(preference.getKey().equals(getString(R.string.pref_activate_notification_key)))
+                        {
+                            preference.setSummary(R.string.pref_notification_enabled);
+                        }
+                        else preference.setSummary(R.string.pref_geofence_enabled);
                         break;
                     case "false":
-                        preference.setSummary(R.string.pref_geofence_disabled);
+                        if(preference.getKey().equals(getString(R.string.pref_activate_notification_key)))
+                        {
+                            preference.setSummary(R.string.pref_notification_disabled);
+                        }
+                        else preference.setSummary(R.string.pref_geofence_disabled);
                         break;
                     default:
                         preference.setSummary(stringValue);
                         break;
                 }
             }
+            else preference.setSummary(stringValue);
             return true;
         }
 
@@ -123,5 +133,4 @@ public class SettingsActivity extends AppCompatActivity
         }
         return super.onOptionsItemSelected(item);
     }
-
 }

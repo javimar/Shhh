@@ -18,13 +18,17 @@ import com.google.android.gms.location.places.PlaceBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import eu.javimar.shhh.sync.GeofenceTransitionsBroadcastReceiver;
+import eu.javimar.shhh.background.receivers.GeofenceTransitionsBroadcastReceiver;
+import eu.javimar.shhh.model.PlaceObject;
+
+import static eu.javimar.shhh.MainActivity.sPlaceList;
+import static eu.javimar.shhh.util.PrefUtils.getGeofenceRadiusFromPreferences;
 
 @SuppressWarnings("all")
 /**
  * To build GEOFENCES, several objects are needed:
  *
- * 1. GEOFENCES object list --> from the PlaceBuffer sent to addUpdateGeofences() method
+ * 1. GEOFENCES object list --> from the PlaceBuffer sent to updateGeofencesList() method
  * 2. GEOFENCE Request --> getGeofencingRequest() method
  * 3. GoogleApiClient --> from the constructor
  * 4. PendingIntent --> getGeofencePendingIntent() method
@@ -35,7 +39,6 @@ public class Geofencing implements ResultCallback
 {
     // Constants
     public static final String LOG_TAG = Geofencing.class.getSimpleName();
-    private static final float GEOFENCE_RADIUS = 75f; // in meters
     //private static final long GEOFENCE_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours in millis
     private static final long GEOFENCE_TIMEOUT = 10 * 60 * 1000; // 10'
 
@@ -67,7 +70,6 @@ public class Geofencing implements ResultCallback
                 mGeofenceList == null || mGeofenceList.size() == 0)
         {
 Log.e(LOG_TAG, "JAVIER REGISTERING ME PIRO size= " + mGeofenceList.size());
-Log.e(LOG_TAG, "JAVIER REGISTERING ME PIRO API= " + mGoogleApiClient);
             return;
         }
         try
@@ -114,26 +116,29 @@ Log.e(LOG_TAG, "JAVIER UNREGISTERING GEOFENCES\n");
 
 
     /**
-     * Given a PlaceBuffer instance, go through all places in it, creating a GEOFENCE instance
+     * Go through all places in master list, creating a GEOFENCE instance
      * which gets added to a list mGeofenceList
      */
-    public void addUpdateGeofences(PlaceBuffer places)
+    public void updateGeofencesList()
     {
         mGeofenceList = new ArrayList<>();
-        if (places == null || places.getCount() == 0) return;
+        float geofenceRadius = getGeofenceRadiusFromPreferences(mContext);
 
-        for (Place place : places)
+        if (sPlaceList == null || sPlaceList.size() < 1) return;
+
+        // iterate through master array of Places
+        for (PlaceObject place : sPlaceList)
         {
-            // Read the place information from the DB cursor
-            String placeUID = place.getId();
-            double placeLat = place.getLatLng().latitude;
-            double placeLng = place.getLatLng().longitude;
+            // Read the place information from the array
+            String placeUID = place.getPlaceId();
+            double placeLat = place.getCoordinates().getLatitude();
+            double placeLng = place.getCoordinates().getLongitude();
 
             // Build a GEOFENCE object like this
             Geofence geofence = new Geofence.Builder()
                     .setRequestId(placeUID) // we can use this ID to ensure uniqueness
                     .setExpirationDuration(GEOFENCE_TIMEOUT)
-                    .setCircularRegion(placeLat, placeLng, GEOFENCE_RADIUS)
+                    .setCircularRegion(placeLat, placeLng, geofenceRadius)
                     .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER |
                             Geofence.GEOFENCE_TRANSITION_EXIT)
                     .build();
@@ -189,19 +194,11 @@ Log.e(LOG_TAG, "JAVIER getGeofencingRequest mGeofenceList size= " + mGeofenceLis
     @Override
     public void onResult(@NonNull Result result)
     {
-
-
-Log.e(LOG_TAG, "JAVIER STATUS= " + result.getStatus().getStatus().toString());
-
-
-
         if(!result.getStatus().isSuccess())
         {
             Log.e(LOG_TAG, String.format("Error adding/removing geofence : %s",
                     result.getStatus().toString()));
         }
-
     }
-
 }
 

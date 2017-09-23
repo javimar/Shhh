@@ -1,5 +1,6 @@
 package eu.javimar.shhh.view;
 
+import android.app.Activity;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
@@ -12,7 +13,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.google.android.gms.location.places.PlaceBuffer;
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,8 +25,10 @@ import eu.javimar.shhh.Geofencing;
 import eu.javimar.shhh.R;
 import eu.javimar.shhh.model.GeoPoint;
 import eu.javimar.shhh.model.PlaceContract.PlaceEntry;
+import eu.javimar.shhh.util.MyEventNotification;
 
 import static eu.javimar.shhh.MainActivity.sAreGeofencesEnabled;
+import static eu.javimar.shhh.MainActivity.sPlaceList;
 import static eu.javimar.shhh.util.HelperUtils.deletePlaceFromDb;
 
 
@@ -47,14 +50,10 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
     // map of items to pending runnables, so we can cancel a place removal if needed
     HashMap<GeoPoint, Runnable> pendingRunnables = new HashMap<>();
 
-    // Data source for the Adapter
-    private PlaceBuffer mPlaces;
 
-
-    public PlaceAdapter(Context context, PlaceBuffer places, Geofencing geofencing)
+    public PlaceAdapter(Context context, Geofencing geofencing)
     {
         this.context = context;
-        this.mPlaces = places;
         this.geofencing = geofencing;
         itemsPendingRemoval = new ArrayList<>();
     }
@@ -94,8 +93,8 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
             holder.regularLayout.setVisibility(View.VISIBLE);
             holder.swipeLayout.setVisibility(View.GONE);
 
-            String placeName = mPlaces.get(position).getName().toString();
-            String placeAddress = mPlaces.get(position).getAddress().toString();
+            String placeName = sPlaceList.get(position).getPlaceName();
+            String placeAddress = sPlaceList.get(position).getPlaceAddress();
             holder.nameTextView.setText(placeName);
             holder.addressTextView.setText(placeAddress);
         }
@@ -145,22 +144,38 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
             // clear list
             itemsPendingRemoval.remove(placeLoc);
         }
-        // delete _ID from db
+        // delete place(_ID) from database
         Uri uri = ContentUris.withAppendedId(PlaceEntry.CONTENT_URI,
                 getIdPlaceFromDb(position));
         deletePlaceFromDb(context, uri);
 
-        notifyItemRemoved(position);
+        //notifyItemRemoved(position);
+
+        // delete place from master list as well to synch with DB, and refresh RecyclerView
+        sPlaceList.remove(position);
+
+        if(sPlaceList.size() < 1)
+        {
+            // Signal MainActivity, that RecyclerView is empty
+            EventBus.getDefault().post(new MyEventNotification(Activity.RESULT_OK));
+        }
+        else this.notifyDataSetChanged();
+
 
         // after deleting a place, need to refresh geofences if enabled
-        if(sAreGeofencesEnabled) geofencing.unRegisterAllGeofences();
+        if(sAreGeofencesEnabled)
+        {
+            geofencing.unRegisterAllGeofences();
+            geofencing.updateGeofencesList();
+            geofencing.registerAllGeofences();
+        }
     }
 
 
     /** Returns the row ID of a database column from its current list position */
     private int getIdPlaceFromDb(int position)
     {
-        if (mPlaces != null)
+        if (sPlaceList != null)
         {
             // need to retrieve the _ID from the database
             String[] projection = new String[]
@@ -171,7 +186,7 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
             String selection =  PlaceEntry.COLUMN_PLACE_ID + "=? ";
             // get the ID of the Place and pass it to the query to get the _ID
             String [] selectionArgs = new String[]
-                    { String.valueOf(mPlaces.get(position).getId()) };
+                    { String.valueOf(sPlaceList.get(position).getPlaceId()) };
 
             Cursor cursor = context.getContentResolver()
                     .query(PlaceEntry.CONTENT_URI, projection, selection, selectionArgs, null);
@@ -203,25 +218,16 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
 
     private GeoPoint getCoordinatesFromPlace(int position)
     {
-        double placeLng = mPlaces.get(position).getLatLng().longitude;
-        double placeLat = mPlaces.get(position).getLatLng().latitude;
+        double placeLng = sPlaceList.get(position).getCoordinates().getLongitude();
+        double placeLat = sPlaceList.get(position).getCoordinates().getLatitude();
         return new GeoPoint(placeLng, placeLat);
     }
 
 
-    public void swapPlaces(PlaceBuffer newPlaces)
-    {
-        if(mPlaces != null) mPlaces.release();
-        mPlaces = newPlaces;
-        // Force the RecyclerView to refresh
-        this.notifyDataSetChanged();
-    }
-
     @Override
     public int getItemCount()
     {
-        if(mPlaces == null) return 0;
-        return mPlaces.getCount();
+        return sPlaceList.size();
     }
 
     class PlaceViewHolder extends RecyclerView.ViewHolder

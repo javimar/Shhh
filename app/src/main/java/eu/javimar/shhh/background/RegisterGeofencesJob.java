@@ -1,4 +1,4 @@
-package eu.javimar.shhh.sync;
+package eu.javimar.shhh.background;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -13,16 +13,18 @@ import com.firebase.jobdispatcher.Trigger;
 
 import java.util.concurrent.TimeUnit;
 
+import eu.javimar.shhh.background.services.GeofenceReregistrationFirebaseJobService;
+
+
 @SuppressWarnings("all")
 public class RegisterGeofencesJob
 {
     // Interval at which to re-register geofences
     //private static final int INTERVAL_MINUTES = 1440; // every 24 hours 1440
-    private static final int INTERVAL_MINUTES = 2;
+    private static final int INTERVAL_MINUTES = 5;
     private static final int INTERVAL_SECONDS =
             (int)(TimeUnit.MINUTES.toSeconds(INTERVAL_MINUTES));
     private static final int SYNC_FLEXTIME_SECONDS = INTERVAL_SECONDS;
-
     private static final String GEOFENCES_JOB_TAG = "geofence_registration_tag";
 
     private static boolean sInitialized = false;
@@ -38,7 +40,7 @@ public class RegisterGeofencesJob
         // Create the Job to periodically re-register geofences since these have an expiration date
         Job constraintReminderJob = dispatcher.newJobBuilder()
 
-                .setService(GeofenceRegistrationFirebaseJobService.class)
+                .setService(GeofenceReregistrationFirebaseJobService.class)
 
                 // Set the UNIQUE tag used to identify this Job.
                 .setTag(GEOFENCES_JOB_TAG)

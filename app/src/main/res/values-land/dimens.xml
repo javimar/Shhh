@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="appbar_header_height">128dp</dimen>
+
+</resources>

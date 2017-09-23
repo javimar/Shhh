@@ -5,9 +5,6 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import eu.javimar.shhh.R;
-import eu.javimar.shhh.model.GeoPoint;
-
-import static eu.javimar.shhh.MainActivity.sCurrentPosition;
 
 
 public final class PrefUtils
@@ -15,36 +12,33 @@ public final class PrefUtils
     // final class
     private PrefUtils() {}
 
-    /** Populates current position from preferences */
-    public static void retrieveLongAndLatFromPreferences(Context c)
+    /** Retrieve job scheduled value */
+    public static boolean getJobScheduledFromPreferences(Context c)
     {
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(c);
-        // if position is not available, locate city center
-        sCurrentPosition = new GeoPoint(
-                pref.getFloat(c.getString(R.string.pref_longtitude_key), -0.3788316f),
-                pref.getFloat(c.getString(R.string.pref_latitude_key), 39.4697621f));
+        return pref.getBoolean(c.getString(R.string.pref_jobscheduled_key), false);
     }
 
-
-    /** Store longitude and latitude in preferences */
-    public static void updateLongAndLatInPreferences(Context c, GeoPoint geoPoint)
+    /** Save job scheduled value */
+    public static void putJobScheduledFromPreferences(Context c, boolean value)
     {
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(c);
-        // set coordinates in preferences
         pref.edit().
-                putFloat(c.getString(R.string.pref_longtitude_key),
-                        (float)geoPoint.getLongitude()).apply();
-        // set workplace field in preferences
-        pref.edit().
-                putFloat(c.getString(R.string.pref_latitude_key),
-                        (float)geoPoint.getLatitude()).apply();
+                putBoolean(c.getString(R.string.pref_jobscheduled_key), value).apply();
+    }
+
+    /** Retrieve geofence radius entered by the user */
+    public static float getGeofenceRadiusFromPreferences(Context c)
+    {
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(c);
+        return Float.parseFloat(pref.getString(c.getString(R.string.pref_georadius_key), "50"));
     }
 
 
     public static boolean getGeofencesSwitchFromPreferences(Context context)
     {
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
-        return pref.getBoolean(context.getString(R.string.pref_activate_geofences_key), true);
+        return pref.getBoolean(context.getString(R.string.pref_activate_geofences_key), false);
     }
 
 }

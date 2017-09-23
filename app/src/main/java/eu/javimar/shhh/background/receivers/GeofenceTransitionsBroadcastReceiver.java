@@ -1,4 +1,4 @@
-package eu.javimar.shhh.sync;
+package eu.javimar.shhh.background.receivers;
 
 import android.app.Notification;
 import android.app.NotificationManager;
