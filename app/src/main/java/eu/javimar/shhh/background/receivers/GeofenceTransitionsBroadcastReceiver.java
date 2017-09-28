@@ -32,7 +32,7 @@ public class GeofenceTransitionsBroadcastReceiver extends BroadcastReceiver
     {
         // Get the Geofence Event from the Intent sent through
         GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
-        geofencingEvent.getTriggeringLocation().toString();
+        geofencingEvent.getTriggeringLocation();
 
 
         if (geofencingEvent.hasError())

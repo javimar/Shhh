@@ -2,12 +2,12 @@ package eu.javimar.shhh.util;
 
 
 
-public class MyEventNotification
+public class MyEventBusNotification
 {
 
     private int mResult;
 
-    public MyEventNotification(int mResult) {
+    public MyEventBusNotification(int mResult) {
         this.mResult = mResult;
     }
 

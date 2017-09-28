@@ -26,4 +26,9 @@
         <item name="android:layout_marginBottom">8dp</item>
     </style>
 
+    <!-- Splash Screen theme. -->
+    <style name="AppTheme.SplashTheme" >
+        <item name="android:windowBackground">@drawable/splash_background</item>
+    </style>
+
 </resources>

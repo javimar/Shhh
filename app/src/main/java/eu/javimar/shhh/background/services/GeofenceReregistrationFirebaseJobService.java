@@ -32,7 +32,7 @@ public class GeofenceReregistrationFirebaseJobService extends JobService
     @Override
     public boolean onStartJob(final JobParameters job)
     {
-Log.e("FirebaseJobService", " JAVIER START JOB" );
+Log.e("FirebaseJobService", " JAVIER STARTING JOB" );
 
         mBackgroundTask = new AsyncTask<Void, Void, Void>()
         {

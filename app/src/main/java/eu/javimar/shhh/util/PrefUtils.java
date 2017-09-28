@@ -6,21 +6,23 @@ import android.preference.PreferenceManager;
 
 import eu.javimar.shhh.R;
 
-
+/**
+ * Utilities class to access Shared Preferences
+ */
 public final class PrefUtils
 {
     // final class
     private PrefUtils() {}
 
     /** Retrieve job scheduled value */
-    public static boolean getJobScheduledFromPreferences(Context c)
+    public static boolean getIsJobScheduledFromPreferences(Context c)
     {
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(c);
         return pref.getBoolean(c.getString(R.string.pref_jobscheduled_key), false);
     }
 
     /** Save job scheduled value */
-    public static void putJobScheduledFromPreferences(Context c, boolean value)
+    public static void putIsJobScheduledToPreferences(Context c, boolean value)
     {
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(c);
         pref.edit().

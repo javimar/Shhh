@@ -26,7 +26,7 @@ import eu.javimar.shhh.Geofencing;
 import eu.javimar.shhh.model.GeoPoint;
 import eu.javimar.shhh.model.PlaceContract.PlaceEntry;
 import eu.javimar.shhh.model.PlaceObject;
-import eu.javimar.shhh.util.MyEventNotification;
+import eu.javimar.shhh.util.MyEventBusNotification;
 
 import static eu.javimar.shhh.MainActivity.sAreGeofencesEnabled;
 import static eu.javimar.shhh.MainActivity.sPlaceList;
@@ -78,8 +78,7 @@ public class RegisterGeofencesIntentService extends IntentService
 
         try
         {
-            // connect the client only if we have permission
-            if (!googleApiClient.isConnecting() || !googleApiClient.isConnected())
+            if (!googleApiClient.isConnecting() && !googleApiClient.isConnected())
             {
                 googleApiClient.connect();
             }
@@ -96,24 +95,24 @@ public class RegisterGeofencesIntentService extends IntentService
         // reset and re-create
         sPlaceList = null;
         sPlaceList = new ArrayList<>();
-        List<String> placeIds = new ArrayList<>();
+        List<String> placeIdsList = new ArrayList<>();
 
         final Geofencing geofencing = new Geofencing(this, googleApiClient);
 
         cursor.moveToPosition(-1);
         while(cursor.moveToNext())
         {
-            placeIds.add(cursor.getString(cursor.getColumnIndex(PlaceEntry.COLUMN_PLACE_ID)));
+            placeIdsList.add(cursor.getString(cursor.getColumnIndex(PlaceEntry.COLUMN_PLACE_ID)));
         }
         // free resources
         cursor.close();
 
-Log.e(TAG, "JAVIER llamando a getPlaceById\n");
+Log.e(TAG, "JAVIER GET_PLACE_BY_ID\n");
 
-        // iterate all Places stored locally retrieving place fields from google server
+        // iterate all Places stored locally in the list, retrieving place fields from google server
         PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi
                 .getPlaceById(googleApiClient,
-                        placeIds.toArray(new String[placeIds.size()]));
+                        placeIdsList.toArray(new String[placeIdsList.size()]));
 
         // populates the internal ArrayList of places (Master List)
         placeResult.setResultCallback(new ResultCallback<PlaceBuffer>()
@@ -133,10 +132,10 @@ Log.e(TAG, "JAVIER llamando a getPlaceById\n");
                 places.release();
 
                 // Signal MainActivity, this IntentService has finished successfully
-                EventBus.getDefault().post(new MyEventNotification(Activity.RESULT_OK));
+                EventBus.getDefault().post(new MyEventBusNotification(Activity.RESULT_OK));
 
-                // retrieve geofences switch value from preferences. This is since if job is run "offline"
-                // we need to update sAreGeofencesEnabled properly, otherwise it is not necessary
+                // retrieve geofences switch value from preferences, because if job is run "offline"
+                // we need to update sAreGeofencesEnabled properly, otherwise it wouldn't be necessary
                 sAreGeofencesEnabled = getGeofencesSwitchFromPreferences(RegisterGeofencesIntentService.this);
                 // proceed with Geofences registration only if set.
                 // We already checked if the cursor came empty
@@ -144,6 +143,10 @@ Log.e(TAG, "JAVIER llamando a getPlaceById\n");
                 {
                     geofencing.updateGeofencesList();
                     geofencing.registerAllGeofences();
+
+                    // free
+                    googleApiClient.disconnect();
+                    googleApiClient = null;
                 }
             }
         });

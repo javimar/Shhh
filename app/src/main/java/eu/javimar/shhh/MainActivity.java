@@ -1,3 +1,42 @@
+/**
+ * Shhh!
+ *
+ * @author Javier Martín
+ * @email: javimardeveloper@gmail.com
+ * @link http://www.javimar.eu
+ * @package eu.javimar.shhh
+ * @version 1
+ *
+BSD 3-Clause License
+
+Copyright (c) 2017, JaviMar
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+ * Redistributions of source code must retain the above copyright notice, this
+list of conditions and the following disclaimer.
+
+ * Redistributions in binary form must reproduce the above copyright notice,
+this list of conditions and the following disclaimer in the documentation
+and/or other materials provided with the distribution.
+
+ * Neither the name of the copyright holder nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ **/
 package eu.javimar.shhh;
 
 import android.Manifest;
@@ -8,6 +47,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -56,7 +96,7 @@ import eu.javimar.shhh.model.GeoPoint;
 import eu.javimar.shhh.model.PlaceContract.PlaceEntry;
 import eu.javimar.shhh.model.PlaceObject;
 import eu.javimar.shhh.background.RegisterGeofencesJob;
-import eu.javimar.shhh.util.MyEventNotification;
+import eu.javimar.shhh.util.MyEventBusNotification;
 import eu.javimar.shhh.util.SwipeUtils;
 import eu.javimar.shhh.view.AboutActivity;
 import eu.javimar.shhh.view.PlaceAdapter;
@@ -69,6 +109,8 @@ import static eu.javimar.shhh.util.HelperUtils.isGooglePlayServicesAvailable;
 import static eu.javimar.shhh.util.HelperUtils.isNetworkAvailable;
 import static eu.javimar.shhh.util.HelperUtils.showSnackbar;
 import static eu.javimar.shhh.util.PrefUtils.getGeofencesSwitchFromPreferences;
+import static eu.javimar.shhh.util.PrefUtils.getIsJobScheduledFromPreferences;
+import static eu.javimar.shhh.util.PrefUtils.putIsJobScheduledToPreferences;
 
 public class MainActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,
@@ -83,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements
 
     public static boolean sHaveLocationPermission = false;
     private static boolean sGeoPrefChange = false;
-    private static boolean sPreferencesOpened = false;
+    private static boolean sOptionsItemSelectedOpened = false;
 
     // Views
     @BindView(R.id.fab) FloatingActionButton mFabAddPlace;
@@ -91,6 +133,7 @@ public class MainActivity extends AppCompatActivity implements
     @BindView(R.id.rv_places) RecyclerView mRecyclerViewPlaces;
     @BindView(R.id.tv_empty_view)TextView mEmptyView;
     @BindView(R.id.iv_empty_image)ImageView mEmptyImage;
+    @BindView(R.id.tv_no_connection_view)TextView mNoConnection;
     @BindView(R.id.iv_image_header)ImageView mHeaderImage;
     @BindView(R.id.collapsing_toolbar)CollapsingToolbarLayout mCollapsingToolbarLayout;
     @BindView(R.id.appbarlayout)AppBarLayout mAppBarLayout;
@@ -105,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements
 
     // Instance of the Geofencing class
     Geofencing mGeofencing;
-    // Allows to keep track of the Preferences for enabling or disabling geofences
+    // Allows to keep track of the Preferences to enable or disable geofences
     public static boolean sAreGeofencesEnabled;
 
     // Master list of Places
@@ -114,35 +157,42 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        ButterKnife.bind(this);
-
-        // Toolbar logic, hide collapsing title
-        setSupportActionBar(mToolbar);
-        mToolbar.setTitle(R.string.app_name);
-        mCollapsingToolbarLayout.setTitleEnabled(false);
-
         // check if Google Play Services is installed
-        isGooglePlayServicesAvailable(this);
+        isGooglePlayServicesAvailable(MainActivity.this);
 
         // manage control permissions for location services
         askForLocationPermission();
 
         // Build up the LocationServices API client
-        mGoogleApiClient= new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
+        mGoogleApiClient= new GoogleApiClient.Builder(MainActivity.this)
+                .addConnectionCallbacks(MainActivity.this)
+                .addOnConnectionFailedListener(MainActivity.this)
                 .addApi(Places.GEO_DATA_API)
                 .addApi(LocationServices.API)
                 .build();
 
-        // instantiate Geofences class, and pass GoogleApiClient
+        // instantiate Geofences class, and pass the GoogleApiClient
         mGeofencing = new Geofencing(this, mGoogleApiClient);
 
         // retrieve geofences switch value from preferences (enabled/disabled)
         sAreGeofencesEnabled = getGeofencesSwitchFromPreferences(this);
+
+        // add support for preferences changes callback
+        PreferenceManager
+                .getDefaultSharedPreferences(this)
+                .registerOnSharedPreferenceChangeListener(this);
+
+
+        // Finally set the normal theme
+        setTheme(R.style.AppTheme_NoActionBar);
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
+
+        // Toolbar logic, hide CollapsingToolbar title in favor of Toolbar
+        setSupportActionBar(mToolbar);
+        mToolbar.setTitle(R.string.app_name);
+        mCollapsingToolbarLayout.setTitleEnabled(false);
 
         // set RecyclerView and Adapter
         mRecyclerViewPlaces.setLayoutManager(new LinearLayoutManager(this));
@@ -169,19 +219,6 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
 
-        // add support for preferences changes callback
-        PreferenceManager
-                .getDefaultSharedPreferences(this)
-                .registerOnSharedPreferenceChangeListener(this);
-
-        // schedule re-registration of geofences once they expire
-        if(sAreGeofencesEnabled && !isDatabaseEmpty(this))
-        {
-Log.e(LOG_TAG, "JAVIER scheduling...");
-
-            RegisterGeofencesJob.scheduleRegisteringGeofences(this);
-        }
-
         // allow swipe functionality to delete items
         setSwipeForRecyclerView();
     }
@@ -194,28 +231,36 @@ Log.e(LOG_TAG, "JAVIER scheduling...");
     }
 
 
-    /** Subscribe the eventbus for the Intent Service finishing */
+    /** EventBus Subscription */
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void handleEventNotification(MyEventNotification myEventNotification)
+    public void handleEventNotification(MyEventBusNotification myEventNotification)
     {
         if(myEventNotification.getmResult() == Activity.RESULT_OK)
         {
-            toggleRecyclerEmptyView();
+            toggleVisibilityRecyclerEmptyViewOrNoConnection();
             placeAdapter.notifyDataSetChanged();
         }
     }
 
-    private void toggleRecyclerEmptyView()
+    private void toggleVisibilityRecyclerEmptyViewOrNoConnection()
     {
-        if (sPlaceList.isEmpty())
+        if (!isNetworkAvailable(MainActivity.this))
+        {
+            mNoConnection.setVisibility(View.VISIBLE);
+            mEmptyView.setVisibility(View.GONE);
+            mEmptyImage.setVisibility(View.GONE);
+        }
+        else if (sPlaceList.isEmpty())
         {
             mEmptyView.setVisibility(View.VISIBLE);
             mEmptyImage.setVisibility(View.VISIBLE);
+            mNoConnection.setVisibility(View.GONE);
         }
         else
         {
             mEmptyView.setVisibility(View.GONE);
             mEmptyImage.setVisibility(View.GONE);
+            mNoConnection.setVisibility(View.GONE);
         }
     }
 
@@ -230,20 +275,26 @@ Log.e(LOG_TAG, "JAVIER scheduling...");
             sGeoPrefChange = true;
             // get the value of the preferences changed
             sAreGeofencesEnabled = getGeofencesSwitchFromPreferences(this);
+
             if(sAreGeofencesEnabled && !isDatabaseEmpty(this))
             {
                 // schedule re-registration of geofences once they expire
-                RegisterGeofencesJob.scheduleRegisteringGeofences(this);
-Log.e(LOG_TAG, "JAVIER scheduling después de preferencias...");
-
+                if(!getIsJobScheduledFromPreferences(this))
+                {
+Log.e(LOG_TAG, "JAVIER scheduling JOB...");
+                    RegisterGeofencesJob.scheduleRegisteringGeofences(this);
+                    // save in preferences that job is scheduled
+                    putIsJobScheduledToPreferences(this, true);
+                }
             }
             else
             {
                 // cancel all jobs
                 RegisterGeofencesJob.cancelAllJobs(this);
+                // save in preferences that job is not scheduled
+                putIsJobScheduledToPreferences(this, false);
 
-Log.e(LOG_TAG, "JAVIER cancel JOBS...");
-
+Log.e(LOG_TAG, "JAVIER cancelling JOB...");
             }
         }
     }
@@ -264,8 +315,7 @@ Log.e(LOG_TAG, "JAVIER cancel JOBS...");
 
         if (sHaveLocationPermission)
         {
-            // connect the client only if we have permission
-            if (!mGoogleApiClient.isConnecting() || !mGoogleApiClient.isConnected())
+            if (!mGoogleApiClient.isConnecting() && !mGoogleApiClient.isConnected())
             {
                 mGoogleApiClient.connect();
             }
@@ -294,11 +344,11 @@ Log.e(LOG_TAG, "JAVIER cancel JOBS...");
         super.onStop();
         if (sHaveLocationPermission)
         {
-            // disconnect the client only if we are not opening preferences
-            if(sPreferencesOpened)
+            // disconnect the client only if we are coming from Intent overflow menu calls
+            if(sOptionsItemSelectedOpened)
             {
                 // reset boolean
-                sPreferencesOpened = false;
+                sOptionsItemSelectedOpened = false;
             }
             else
             {
@@ -325,7 +375,7 @@ Log.e(LOG_TAG, "JAVIER cancel JOBS...");
         if(sAreGeofencesEnabled) mToolbar.setLogo(R.drawable.ic_volume_off);
         else mToolbar.setLogo(R.drawable.ic_volume);
 
-        toggleRecyclerEmptyView();
+        toggleVisibilityRecyclerEmptyViewOrNoConnection();
     }
 
     @Override
@@ -353,11 +403,12 @@ Log.e(LOG_TAG, "JAVIER cancel JOBS...");
         switch (item.getItemId())
         {
             case R.id.action_settings:
-                sPreferencesOpened = true;
+                sOptionsItemSelectedOpened = true;
                 startActivity(new Intent(this, SettingsActivity.class));
                 return true;
 
             case R.id.action_about:
+                sOptionsItemSelectedOpened = true;
                 startActivity(new Intent(this, AboutActivity.class));
                 return true;
         }
@@ -541,8 +592,8 @@ Log.e(LOG_TAG, "JAVIER cancel JOBS...");
                     sPlaceList.add(new PlaceObject(placeID, placeName, placeAddress,
                             new GeoPoint(coordinates.longitude, coordinates.latitude)));
 
-                    // check for empty view
-                    toggleRecyclerEmptyView();
+                    // solve for empty view
+                    toggleVisibilityRecyclerEmptyViewOrNoConnection();
                     // refresh RecyclerView to match DB
                     placeAdapter.notifyDataSetChanged();
 
@@ -570,7 +621,6 @@ Log.e(LOG_TAG, "JAVIER cancel JOBS...");
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE)
         {
             mHeaderImage.setVisibility(View.GONE);
-            //getLoaderManager().restartLoader(PLACES_DB_LOADER, null, this);
             // Changes the height and width to the specified *pixels*
             params.height = convertDipsToPx(this, 128);
         }
@@ -580,6 +630,7 @@ Log.e(LOG_TAG, "JAVIER cancel JOBS...");
             params.height = convertDipsToPx(this, 256);
         }
         mAppBarLayout.setLayoutParams(params);
+        toggleVisibilityRecyclerEmptyViewOrNoConnection();
     }
 
 

@@ -12,8 +12,6 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.PlaceBuffer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +38,7 @@ public class Geofencing implements ResultCallback
     // Constants
     public static final String LOG_TAG = Geofencing.class.getSimpleName();
     //private static final long GEOFENCE_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours in millis
-    private static final long GEOFENCE_TIMEOUT = 10 * 60 * 1000; // 10'
+    private static final long GEOFENCE_TIMEOUT = 5 * 60 * 1000; // 24 hours in millis
 
     private List<Geofence> mGeofenceList;
     private PendingIntent mGeofencePendingIntent;
@@ -166,9 +164,6 @@ Log.e(LOG_TAG, "JAVIER UNREGISTERING GEOFENCES\n");
 Log.e(LOG_TAG, "JAVIER getGeofencingRequest mGeofenceList size= " + mGeofenceList.size());
 
         builder.addGeofences(mGeofenceList);
-
-
-
         return builder.build();
     }
 

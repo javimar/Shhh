@@ -6,9 +6,16 @@ import android.content.Intent;
 import android.text.TextUtils;
 import android.util.Log;
 
+import eu.javimar.shhh.background.services.RegisterGeofencesIntentService;
+
 import static eu.javimar.shhh.util.HelperUtils.isDatabaseEmpty;
 import static eu.javimar.shhh.util.PrefUtils.getGeofencesSwitchFromPreferences;
 
+
+/**
+ * When the device is rebooted, the app should listen for the device's boot complete action,
+ * and then re- register the geofences.
+ */
 public class ListenToBootCompletedBroadcastReceiver extends BroadcastReceiver
 {
     private static final String LOG_TAG = ListenToBootCompletedBroadcastReceiver.class.getSimpleName();
@@ -26,11 +33,7 @@ public class ListenToBootCompletedBroadcastReceiver extends BroadcastReceiver
         // A BOOT COMPLETED must have happened.
         if(!TextUtils.equals(intent.getAction(), Intent.ACTION_BOOT_COMPLETED)) return;
 
-        // NOW, we can continue
-Log.e(LOG_TAG, "JAVIER intent= " + intent.getAction());
-
-
-
-
+        // NOW, register Geofences
+        context.startService(new Intent(context, RegisterGeofencesIntentService.class));
     }
 }

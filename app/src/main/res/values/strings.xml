@@ -70,13 +70,8 @@
 
     <!-- ABOUT -->
     <string name="about_me" translatable="false">\u00A9 2017 Javier Martín</string>
-    <string name="about_location">Your location:\n\n%s</string>
     <string name="privacy_policy" translatable="false">http://www.google.com/policies/privacy</string>
-
-    <!-- CARDINAL POINTS -->
-    <string name="location_east">EAST</string>
-    <string name="location_west">WEST</string>
-    <string name="location_north">NORTH</string>
-    <string name="location_south">SOUTH</string>
+    <string name="about_info">Shhh! is a useful app that will allow you to pick any place listed under Google Places, and set a Geofence around it so when you enter within a determined radius (selected by you in settings), the app will launch silent mode. When you abandon that area, the app will resume its normal mode.\n\nThis is very useful when entering hospitals, religious places, or any place where you don\'t want to bother other people.\n\nPlease keep in mind sometimes the geofences might not trigger, due to the lack of signal, either network, wireless, or GPS, so don\’t rely 100% that your phone will get silent. Another thing to remember is to enable Internet in your phone as well.</string>
+    <string name="about_photo_header">Header image credits: NASA</string>
 
 </resources>

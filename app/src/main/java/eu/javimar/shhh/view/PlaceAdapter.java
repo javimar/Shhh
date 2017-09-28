@@ -25,7 +25,7 @@ import eu.javimar.shhh.Geofencing;
 import eu.javimar.shhh.R;
 import eu.javimar.shhh.model.GeoPoint;
 import eu.javimar.shhh.model.PlaceContract.PlaceEntry;
-import eu.javimar.shhh.util.MyEventNotification;
+import eu.javimar.shhh.util.MyEventBusNotification;
 
 import static eu.javimar.shhh.MainActivity.sAreGeofencesEnabled;
 import static eu.javimar.shhh.MainActivity.sPlaceList;
@@ -157,7 +157,7 @@ public class PlaceAdapter extends RecyclerView.Adapter<PlaceAdapter.PlaceViewHol
         if(sPlaceList.size() < 1)
         {
             // Signal MainActivity, that RecyclerView is empty
-            EventBus.getDefault().post(new MyEventNotification(Activity.RESULT_OK));
+            EventBus.getDefault().post(new MyEventBusNotification(Activity.RESULT_OK));
         }
         else this.notifyDataSetChanged();
 

@@ -32,6 +32,8 @@ dependencies {
     compile "com.android.support:recyclerview-v7:${supportLibVersion}"
     compile "com.android.support:design:${supportLibVersion}"
 
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+
     compile 'com.google.android.gms:play-services-places:11.0.4'
     compile 'com.google.android.gms:play-services-location:11.0.4'
 

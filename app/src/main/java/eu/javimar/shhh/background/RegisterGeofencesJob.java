@@ -25,7 +25,7 @@ public class RegisterGeofencesJob
     private static final int INTERVAL_SECONDS =
             (int)(TimeUnit.MINUTES.toSeconds(INTERVAL_MINUTES));
     private static final int SYNC_FLEXTIME_SECONDS = INTERVAL_SECONDS;
-    private static final String GEOFENCES_JOB_TAG = "geofence_registration_tag";
+    private static final String GEOFENCES_JOB_TAG = "geofence_registration_job_tag";
 
     private static boolean sInitialized = false;
 

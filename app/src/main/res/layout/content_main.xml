@@ -21,11 +21,24 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
+        android:visibility="gone"
         android:padding="@dimen/keyline_1"
         android:layout_marginBottom="64dp"
         android:textColor="@color/colorPrimaryDark"
         android:textAppearance="?android:textAppearanceLarge"
         android:text="@string/no_places_in_list" />
+
+    <TextView
+        android:id="@+id/tv_no_connection_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:visibility="gone"
+        android:padding="@dimen/keyline_1"
+        android:layout_marginBottom="64dp"
+        android:textColor="@color/colorPrimaryDark"
+        android:textAppearance="?android:textAppearanceLarge"
+        android:text="@string/no_internet_connection" />
 
     <ImageView
         android:id="@+id/iv_empty_image"
@@ -33,6 +46,7 @@
         android:layout_height="200dp"
         android:layout_margin="64dp"
         android:layout_centerHorizontal="true"
+        android:visibility="gone"
         app:srcCompat="@drawable/ic_empty_image"
         android:contentDescription="@string/cd_empty_image" />
 
