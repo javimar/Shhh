@@ -107,8 +107,6 @@ public class RegisterGeofencesIntentService extends IntentService
         // free resources
         cursor.close();
 
-Log.e(TAG, "JAVIER GET_PLACE_BY_ID\n");
-
         // iterate all Places stored locally in the list, retrieving place fields from google server
         PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi
                 .getPlaceById(googleApiClient,

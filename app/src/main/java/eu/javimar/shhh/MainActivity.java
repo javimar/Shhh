@@ -281,7 +281,6 @@ public class MainActivity extends AppCompatActivity implements
                 // schedule re-registration of geofences once they expire
                 if(!getIsJobScheduledFromPreferences(this))
                 {
-Log.e(LOG_TAG, "JAVIER scheduling JOB...");
                     RegisterGeofencesJob.scheduleRegisteringGeofences(this);
                     // save in preferences that job is scheduled
                     putIsJobScheduledToPreferences(this, true);
@@ -293,8 +292,6 @@ Log.e(LOG_TAG, "JAVIER scheduling JOB...");
                 RegisterGeofencesJob.cancelAllJobs(this);
                 // save in preferences that job is not scheduled
                 putIsJobScheduledToPreferences(this, false);
-
-Log.e(LOG_TAG, "JAVIER cancelling JOB...");
             }
         }
     }

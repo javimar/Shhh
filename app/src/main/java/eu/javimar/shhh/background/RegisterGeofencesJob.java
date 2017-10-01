@@ -20,15 +20,13 @@ import eu.javimar.shhh.background.services.GeofenceReregistrationFirebaseJobServ
 public class RegisterGeofencesJob
 {
     // Interval at which to re-register geofences
-    //private static final int INTERVAL_MINUTES = 1440; // every 24 hours 1440
-    private static final int INTERVAL_MINUTES = 5;
+    private static final int INTERVAL_MINUTES = 60 * 24; // every 24
     private static final int INTERVAL_SECONDS =
             (int)(TimeUnit.MINUTES.toSeconds(INTERVAL_MINUTES));
     private static final int SYNC_FLEXTIME_SECONDS = INTERVAL_SECONDS;
     private static final String GEOFENCES_JOB_TAG = "geofence_registration_job_tag";
 
     private static boolean sInitialized = false;
-
 
     public synchronized static void scheduleRegisteringGeofences(@NonNull final Context context)
     {

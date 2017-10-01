@@ -77,9 +77,7 @@
             app:layout_constraintTop_toBottomOf="@+id/lineGreen"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            app:layout_constraintBottom_toBottomOf="@+id/lineAccent"
-            app:layout_constraintHorizontal_bias="0.0"
-            android:layout_marginBottom="16dp" />
+            app:layout_constraintHorizontal_bias="0.50" />
 
         <View
             android:layout_width="0dp"
@@ -107,8 +105,8 @@
             app:layout_constraintRight_toRightOf="parent"
             android:layout_marginLeft="8dp"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintHorizontal_bias="0.504"
-            android:layout_marginTop="24dp"
+            app:layout_constraintHorizontal_bias="0.417"
+            android:layout_marginTop="32dp"
             app:layout_constraintTop_toBottomOf="@+id/lineAccent"
             android:id="@+id/textView" />
 

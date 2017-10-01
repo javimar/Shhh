@@ -37,8 +37,7 @@ public class Geofencing implements ResultCallback
 {
     // Constants
     public static final String LOG_TAG = Geofencing.class.getSimpleName();
-    //private static final long GEOFENCE_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours in millis
-    private static final long GEOFENCE_TIMEOUT = 5 * 60 * 1000; // 24 hours in millis
+    private static final long GEOFENCE_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours in millis
 
     private List<Geofence> mGeofenceList;
     private PendingIntent mGeofencePendingIntent;
@@ -67,13 +66,10 @@ public class Geofencing implements ResultCallback
         if (mGoogleApiClient == null || !mGoogleApiClient.isConnected() ||
                 mGeofenceList == null || mGeofenceList.size() == 0)
         {
-Log.e(LOG_TAG, "JAVIER REGISTERING ME PIRO size= " + mGeofenceList.size());
             return;
         }
         try
         {
-Log.e(LOG_TAG, "JAVIER REGISTERING GEOFENCES\n");
-
             // Add the ApiClient, the request and the pending intent
             LocationServices.GeofencingApi.addGeofences(
                     mGoogleApiClient,
@@ -97,7 +93,6 @@ Log.e(LOG_TAG, "JAVIER REGISTERING GEOFENCES\n");
         }
         try
         {
-Log.e(LOG_TAG, "JAVIER UNREGISTERING GEOFENCES\n");
             LocationServices.GeofencingApi.removeGeofences(
                     mGoogleApiClient,
                     // same pending intent that was used in registerGeofences
@@ -159,10 +154,6 @@ Log.e(LOG_TAG, "JAVIER UNREGISTERING GEOFENCES\n");
         // when building a GeofencingRequest you need to specify an initial trigger that specifies
         // what happens when the device is already inside. INITIAL_TRIGGER_ENTER sets it immediately
         builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
-
-
-Log.e(LOG_TAG, "JAVIER getGeofencingRequest mGeofenceList size= " + mGeofenceList.size());
-
         builder.addGeofences(mGeofenceList);
         return builder.build();
     }
