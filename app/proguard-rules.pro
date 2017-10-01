@@ -9,13 +9,6 @@
 
 # Add any project specific keep options here:
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
-
 # Uncomment this to preserve the line number information for
 # debugging stack traces.
 #-keepattributes SourceFile,LineNumberTable
@@ -24,16 +17,21 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
+#EVENTBUS
+-keepattributes *Annotation*
+-keepclassmembers class ** { @org.greenrobot.eventbus.Subscribe <methods>; }
+-keep enum org.greenrobot.eventbus.ThreadMode { *; }
+# Only required if you use AsyncExecutor
+-keepclassmembers class * extends org.greenrobot.eventbus.util.ThrowableFailureEvent {
+    <init>(java.lang.Throwable);
+}
+
+
+#BUTTERKNIFE
 -dontwarn okio.**
 -dontwarn javax.annotation.**
 -keep class butterknife.** { *; }
 -dontwarn butterknife.internal.**
 -keep class **$$ViewInjector { *; }
-
--keepclasseswithmembernames class * {
-    @butterknife.* <fields>;
-}
-
--keepclasseswithmembernames class * {
-    @butterknife.* <methods>;
-}
+-keepclasseswithmembernames class * { @butterknife.* <fields>; }
+-keepclasseswithmembernames class * { @butterknife.* <methods>; }
