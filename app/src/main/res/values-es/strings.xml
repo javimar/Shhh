@@ -16,11 +16,12 @@
     <string name="pref_geofence_title">Geoperímetros</string>
     <string name="pref_notification_title">Registro de Geoperímetros</string>
     <string name="pref_radius_title">Radio del geoperímetro en metros</string>
-    <string name="pref_radius_hint">recomendado 50–200</string>
+    <string name="pref_radius_hint">recomendado 50–250</string>
 
     <!-- MENU LABELS -->
     <string name="action_settings">Ajustes</string>
     <string name="action_about">Acerca de</string>
+    <string name="action_scoreapp">Puntúa esta app</string>
 
     <!-- INFO -->
     <string name="deleteString">Borrar</string>
@@ -58,7 +59,7 @@
     <string name="notification_nextrun">Próximo registro en 24h</string>
 
     <!-- ABOUT -->
-    <string name="about_info">Shhh! es una aplicación que te permitirá seleccionar cualquier lugar del mundo listado en Google Places, y establecer un geoperímetro alrededor de este con un radio determinado (por ti en preferencias), de manera que cuando entres dentro de ese área, la app lanzará el modo silencio del teléfono. Cuando abandones el área, el modo silencio desaparecerá.\n\nEsto es muy útil para cuando accedas a hospitales, lugares de culto, o a cualquier lugar donde tu móvil pueda molestar a otras personas.\n\nRecuerda que a veces los geoperímetros pueden no funcionar debido a una falta de señal, ya sea de red, wifi, o GPS, por lo que no debes confiar al 100% que tu teléfono se vaya a silenciar.\nOtra cosa a tener en cuenta es que necesitarás que el teléfono esté conectado a Internet</string>
+    <string name="about_info">Shhh! es una aplicación que te permitirá seleccionar cualquier lugar del mundo listado en Google Places, y establecer un geoperímetro alrededor de este con un radio determinado (por ti en preferencias), de manera que cuando entres dentro de ese área, la app lanzará el modo silencio del teléfono. Cuando abandones el área, el modo silencio desaparecerá.\n\nEsto es muy útil para cuando accedas a hospitales, lugares de culto, o a cualquier lugar donde tu móvil pueda molestar a otras personas.\n\nRecuerda que a veces los geoperímetros pueden no funcionar debido a una falta de señal, ya sea de red, wifi, o GPS, por lo que NO DEBES confiar al 100% que tu teléfono se vaya a silenciar.\nPara una mayor fiabilidad, asegúrate de que tu teléfono esté conectado a Internet, y tenga la Wi-Fi encendida aunque no estés conectado a ninguna.</string>
     <string name="about_photo_header">Foto de cabecera: NASA</string>
 
 </resources>

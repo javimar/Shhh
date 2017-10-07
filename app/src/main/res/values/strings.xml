@@ -21,7 +21,7 @@
     <string name="pref_geofence_title">Geofences</string>
     <string name="pref_notification_title">Geofences registration</string>
     <string name="pref_radius_title">Geofence radius in meters</string>
-    <string name="pref_radius_hint">recommended 50–200</string>
+    <string name="pref_radius_hint">recommended 50–250</string>
 
     <!-- PREFERENCES INTERNAL KEYS -->
     <string name="pref_latitude_key" translatable="false">latitudeKey</string>
@@ -32,6 +32,7 @@
     <!-- MENU LABELS -->
     <string name="action_settings">Settings</string>
     <string name="action_about">About</string>
+    <string name="action_scoreapp">Score Shhh!</string>
 
     <!-- INFO -->
     <string name="deleteString">Delete</string>
@@ -71,7 +72,7 @@
     <!-- ABOUT -->
     <string name="about_me" translatable="false">\u00A9 2017 Javier Martín</string>
     <string name="privacy_policy" translatable="false">http://www.google.com/policies/privacy</string>
-    <string name="about_info">Shhh! is a useful app that will allow you to pick any place listed under Google Places, and set a Geofence around it so when you enter within a determined radius (selected by you in settings), the app will launch silent mode. When you abandon that area, the app will resume its normal mode.\n\nThis is very useful when entering hospitals, religious places, or any place where you don\'t want to bother other people.\n\nPlease keep in mind sometimes the geofences might not trigger, due to the lack of signal, either network, wireless, or GPS, so don\’t rely 100% that your phone will get silent. Another thing to remember is to enable Internet in your phone as well.</string>
+    <string name="about_info">Shhh! is a useful app that will allow you to pick any place listed under Google Places, and set a Geofence around it so when you enter within a determined radius (selected by you in settings), the app will launch silent mode. When you abandon that area, the app will resume its normal mode.\n\nThis is very useful when entering hospitals, religious places, or any place where you don\'t want to bother other people.\n\nPlease keep in mind sometimes the geofences might not trigger, due to the lack of signal, either network, wireless, or GPS, so DON\’T RELY 100% that your phone will get silent. To get better reliability, make sure Internet is enabled in your phone, as well as Wi-Fi (not necessary to be connected to one though).</string>
     <string name="about_photo_header">Header image credits: NASA</string>
 
 </resources>

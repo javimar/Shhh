@@ -46,6 +46,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
@@ -102,6 +103,7 @@ import eu.javimar.shhh.view.AboutActivity;
 import eu.javimar.shhh.view.PlaceAdapter;
 import eu.javimar.shhh.view.SettingsActivity;
 
+import static eu.javimar.shhh.model.PlaceContract.CONTENT_AUTHORITY;
 import static eu.javimar.shhh.util.HelperUtils.PLAY_SERVICES_RESOLUTION_REQUEST;
 import static eu.javimar.shhh.util.HelperUtils.convertDipsToPx;
 import static eu.javimar.shhh.util.HelperUtils.isDatabaseEmpty;
@@ -341,7 +343,7 @@ public class MainActivity extends AppCompatActivity implements
         super.onStop();
         if (sHaveLocationPermission)
         {
-            // disconnect the client only if we are coming from Intent overflow menu calls
+            // donn't disconnect the client when accessing the menu
             if(sOptionsItemSelectedOpened)
             {
                 // reset boolean
@@ -402,6 +404,13 @@ public class MainActivity extends AppCompatActivity implements
             case R.id.action_settings:
                 sOptionsItemSelectedOpened = true;
                 startActivity(new Intent(this, SettingsActivity.class));
+                return true;
+
+            case R.id.action_scoreapp:
+                sOptionsItemSelectedOpened = true;
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse("market://details?id=" + CONTENT_AUTHORITY));
+                startActivity(intent);
                 return true;
 
             case R.id.action_about:

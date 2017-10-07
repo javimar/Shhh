@@ -15,7 +15,7 @@
 
         <EditTextPreference
             android:autoText="false"
-            android:defaultValue="50"
+            android:defaultValue="150"
             android:key="@string/pref_georadius_key"
             android:dependency="@string/pref_activate_geofences_key"
             android:hint="@string/pref_radius_hint"
@@ -24,7 +24,7 @@
             android:maxLength="3"
             android:selectAllOnFocus="true"
             android:singleLine="true"
-            android:summary="50"
+            android:summary="150"
             android:title="@string/pref_radius_title" />
 
     </PreferenceCategory>

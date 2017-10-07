@@ -10,6 +10,12 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/action_scoreapp"
+        android:orderInCategory="110"
+        android:title="@string/action_scoreapp"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_about"
         android:orderInCategory="120"
         android:title="@string/action_about"

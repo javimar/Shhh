@@ -68,6 +68,7 @@ public class Geofencing implements ResultCallback
         {
             return;
         }
+
         try
         {
             // Add the ApiClient, the request and the pending intent
@@ -130,8 +131,12 @@ public class Geofencing implements ResultCallback
             // Build a GEOFENCE object like this
             Geofence geofence = new Geofence.Builder()
                     .setRequestId(placeUID) // we can use this ID to ensure uniqueness
+                    // give them an expiration time
                     .setExpirationDuration(GEOFENCE_TIMEOUT)
                     .setCircularRegion(placeLat, placeLng, geofenceRadius)
+                    // Sets the delay between GEOFENCE_TRANSITION_ENTER and GEOFENCE_TRANSITION_DWELLING
+                    //.setLoiteringDelay(60000) // 1 minute
+                    // transitions of interest
                     .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER |
                             Geofence.GEOFENCE_TRANSITION_EXIT)
                     .build();
@@ -152,7 +157,7 @@ public class Geofencing implements ResultCallback
         GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
 
         // when building a GeofencingRequest you need to specify an initial trigger that specifies
-        // what happens when the device is already inside. INITIAL_TRIGGER_ENTER sets it immediately
+        // what happens when the device is already inside.
         builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
         builder.addGeofences(mGeofenceList);
         return builder.build();
