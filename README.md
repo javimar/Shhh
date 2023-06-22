@@ -8,3 +8,5 @@ This neat application allows users to pick any place listed in Google Places, an
 This is very useful when entering hospitals, religious places, or any place where we don't want to bother other people.
 
 App available in Spanish and English.
+
+[![Hits-of-Code](https://hitsofcode.com/github/javimar/shhh?branch=master)](https://hitsofcode.com/github/javimar/shhh/view?branch=master)
